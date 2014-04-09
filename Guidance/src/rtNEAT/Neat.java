@@ -1,7 +1,12 @@
 package rtNEAT;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Random;
 
 //#ifndef _NERO_NEAT_H_
@@ -384,10 +389,9 @@ public class Neat{
 //	bool load_neat_params(const char *filename, bool output = false);
 	boolean load_neat_params(String filename, boolean output){
 //		std::ifstream paramFile(filename);
-		File file = new File(filename);
 		try{
-			FileReader paramFile = new FileReader(file);
-
+			InputStream is = new FileInputStream("filename");
+			BufferedReader paramFile = new BufferedReader(new InputStreamReader(is));
 //
 //		if(!paramFile) {
 //			return false;
@@ -395,7 +399,7 @@ public class Neat{
 		//covered by try-catch;
 		
 //		char curword[128];
-		String curword = new String();
+		char[] curword = new char[128];
 //		//char delimiters[] = " \n"; // tab = bad, CR(int 13) = bad in the file
 //		//char delimiters[] = " \t\n";
 //		//char delimiters[] = {' ', '\n', (char)13};
@@ -410,8 +414,11 @@ public class Neat{
 			System.out.println("NEAT READING " + filename);
 //
 //		paramFile>>curword;
-		paramFile.read();
+		paramFile.read(curword);
 //		paramFile>>NEAT::trait_param_mut_prob;
+		paramFile.read(curword);
+		trait_param_mut_prob = Integer.parseInt(new String(curword));
+		System.out.println("Trait param mut prob = " + trait_param_mut_prob);
 //
 //		//strcpy(curword, getUnit(filestring, curwordnum, delimiters));
 //		//NEAT::trait_param_mut_prob = atof(curword);
