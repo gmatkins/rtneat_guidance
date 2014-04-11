@@ -17,6 +17,7 @@ package rtNEAT;
 //	//   The point of the network is to define a single entity which can evolve
 //	//   or learn on its own, even though it may be part of a larger framework 
 //	class Network {
+class Network{
 //
 //		friend class Genome;
 //
@@ -123,6 +124,9 @@ package rtNEAT;
 //		int max_depth();
 //
 //	};
+	
+} // end class Network
+	
 //
 //} // namespace NEAT
 //
