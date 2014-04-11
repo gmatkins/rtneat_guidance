@@ -23,17 +23,18 @@ public class Neat{
 	final static int NUM_TRAIT_PARAMS = 8;
 //
 //	extern double trait_param_mut_prob;
-	public double trait_param_mut_prob = 0;
+	public static double trait_param_mut_prob = 0;
 //	extern double trait_mutation_power; // Power of mutation on a signle trait param 
-	public double trait_mutation_power = 0;
+	public static double trait_mutation_power = 0;
 //	extern double linktrait_mut_sig;  // Amount that mutation_num changes for a trait change inside a link
-	public double linktrait_mut_sig = 0;
+	public static double linktrait_mut_sig = 0;
 //	extern double nodetrait_mut_sig; // Amount a mutation_num changes on a link connecting a node that changed its trait
-	public double nodetrait_mut_sig = 0;
+	public static double nodetrait_mut_sig = 0;
 //	extern double weight_mut_power;  // The power of a linkweight mutation
-	public double weight_mut_power = 0;
+	//^This bad boy is 'weigh_mut_power' in the param file
+	public static double weigh_mut_power = 0;
 //	extern double recur_prob;        // Prob. that a link mutation which doesn't have to be recurrent will be made recurrent
-	public double recur_prob = 0;
+	public static double recur_prob = 0;
 //
 //	// These 3 global coefficients are used to determine the formula for
 //	// computating the compatibility between 2 genomes.  The formula is:
@@ -43,66 +44,66 @@ public class Neat{
 //	// excess Genes, and parametric difference between Genes of the
 //	// same function, respectively. 
 //	extern double disjoint_coeff;
-	public double disjoint_coeff = 0;
+	public static double disjoint_coeff = 0;
 //	extern double excess_coeff;
-	public double excess_coeff = 0;
+	public static double excess_coeff = 0;
 //	extern double mutdiff_coeff;
-	public double mutdiff_coeff = 0;
+	public static double mutdiff_coeff = 0;
 //
 //	// This global tells compatibility threshold under which two Genomes are considered the same species 
 //	extern double compat_threshold;
-	public double compat_threshold = 0;
+	public static double compat_thresh = 0;
 //
 //	// Globals involved in the epoch cycle - mating, reproduction, etc.. 
 //	extern double age_significance;          // How much does age matter?
-	public double age_signifigance = 0;
+	public static double age_significance = 0;
 //	extern double survival_thresh;           // Percent of ave fitness for survival
-	
+	public static double survival_thresh = 0;
 //	extern double mutate_only_prob;          // Prob. of a non-mating reproduction
-	public double mutate_only_prob = 0;
+	public static double mutate_only_prob = 0;
 //	extern double mutate_random_trait_prob;
-	public double mutate_random_trait_prob = 0;
+	public static double mutate_random_trait_prob = 0;
 //	extern double mutate_link_trait_prob;
-	public double mutate_link_trait_prob = 0;
+	public static double mutate_link_trait_prob = 0;
 //	extern double mutate_node_trait_prob;
-	public double mutate_node_trait_prob = 0;
+	public static double mutate_node_trait_prob = 0;
 //	extern double mutate_link_weights_prob;
-	public double mutate_link_weights_prob = 0;
+	public static double mutate_link_weights_prob = 0;
 //	extern double mutate_toggle_enable_prob;
-	public double mutate_toggle_enable_prob = 0;
+	public static double mutate_toggle_enable_prob = 0;
 //	extern double mutate_gene_reenable_prob;
-	public double mutate_gene_reenable_prob = 0;
+	public static double mutate_gene_reenable_prob = 0;
 //	extern double mutate_add_node_prob;
-	public double mutate_add_node_prob = 0;
+	public static double mutate_add_node_prob = 0;
 //	extern double mutate_add_link_prob;
-	public double mutate_add_link_prob = 0;
+	public static double mutate_add_link_prob = 0;
 //	extern double interspecies_mate_rate;    // Prob. of a mate being outside species
-	public double interspecies_mate_rate = 0;
+	public static double interspecies_mate_rate = 0;
 //	extern double mate_multipoint_prob;
-	public double mate_multipoint_prob = 0;
+	public static double mate_multipoint_prob = 0;
 //	extern double mate_multipoint_avg_prob;
-	public double mate_multipoint_avg_prob = 0;
+	public static double mate_multipoint_avg_prob = 0;
 //	extern double mate_singlepoint_prob;
-	public double mate_singlepoint_prob = 0;
+	public static double mate_singlepoint_prob = 0;
 //	extern double mate_only_prob;            // Prob. of mating without mutation
-	public double mate_only_prob = 0;
+	public static double mate_only_prob = 0;
 //	extern double recur_only_prob;  // Probability of forcing selection of ONLY links that are naturally recurrent
-	public double recur_only_prob = 0;
+	public static double recur_only_prob = 0;
 //	extern int pop_size;  // Size of population
-	public int pop_size = 0;
+	public static int pop_size = 0;
 //	extern int dropoff_age;  // Age where Species starts to be penalized
-	public int dropoff_age = 0;
+	public static int dropoff_age = 0;
 //	extern int newlink_tries;  // Number of tries mutate_add_link will attempt to find an open link
-	public int newlink_tries = 0;
+	public static int newlink_tries = 0;
 //	extern int print_every; // Tells to print population to file every n generations
-	public int print_every = 0;
+	public static int print_every = 0;
 //	extern int babies_stolen; // The number of babies to siphon off to the champions 
-	public int babies_stolen = 0;
+	public static int babies_stolen = 0;
 //	extern int num_runs; //number of times to run experiment
-	public int num_runs = 0;
+	public static int num_runs = 0;
 //
 //	//extern MRandomR250 NEATRandGen; // Random number generator; can pass seed value as argument
-	Random NEATRandGen = new Random();
+	private static Random NEATRandGen = new Random();
 //
 //	//const char *getUnit(const char *string, int index, const char *set);
 //	String getUnit(String string, int index, String set){
@@ -113,7 +114,7 @@ public class Neat{
 //		removed in original code. Don't know why.
 //	}
 //	int getUnitCount(const char *string, const char *set);
-	public int getUnitCount(String string, String set){
+	public static int getUnitCount(String string, String set){
 		int count = 0;
 		for (int i = 0; i < string.length(); ++i){
 			if (set.contains(string.subSequence(i, i))){
@@ -132,7 +133,7 @@ public class Neat{
 //        else 
 //            return -1;
 //    }
-	public int randposneg(){
+	public static int randposneg(){
 		if(NEATRandGen.nextInt() %2 == 1 ){
 			return 1;
 		}
@@ -144,14 +145,14 @@ public class Neat{
 //	extern inline int randint(int x,int y) {
 //        return rand()%(y-x+1)+x;
 //    }
-	public int randint(int x, int y){
+	public static int randint(int x, int y){
 		return NEATRandGen.nextInt()%(y-x+1)+x;
 	}
 //
 //    extern inline double randfloat() {
 //        return rand() / (double) RAND_MAX;        
 //    }
-	public double randfloat(){
+	public static double randfloat(){
 		return NEATRandGen.nextFloat();
 	}
 //
@@ -172,7 +173,7 @@ public class Neat{
 //	// When not right-shifted, the steepened slope is closest to a linear
 //	// ascent as possible between -0.5 and 0.5
 //	extern double fsigmoid(double,double,double);
-	public double fsigmoid(double activesum,double slope,double constant){
+	public static double fsigmoid(double activesum,double slope,double constant){
 		return (1/(1+(Math.exp(-(slope*activesum))))); //Compressed
 	}
 //
@@ -187,7 +188,7 @@ public class Neat{
 //	//      emphasize decorrelation on hebbian learning!
 //	extern double oldhebbian(double weight, double maxweight, double active_in, double active_out, double hebb_rate, double pre_rate, double post_rate);
 //
-	public double oldhebbian(double weight, double maxweight, double active_in, double active_out, double hebb_rate, double pre_rate, double post_rate) {
+	public static double oldhebbian(double weight, double maxweight, double active_in, double active_out, double hebb_rate, double pre_rate, double post_rate) {
 
 		boolean neg=false;
 		double delta;
@@ -273,7 +274,7 @@ public class Neat{
 //	// NOTE: For an inhibatory connection, it makes sense to
 //	//      emphasize decorrelation on hebbian learning!	
 //	extern double hebbian(double weight, double maxweight, double active_in, double active_out, double hebb_rate, double pre_rate, double post_rate);
-	public double hebbian(double weight, double maxweight, double active_in, double active_out, double hebb_rate, double pre_rate, double post_rate){
+	public static double hebbian(double weight, double maxweight, double active_in, double active_out, double hebb_rate, double pre_rate, double post_rate){
 		boolean neg=false;
 		double delta;
 
@@ -361,7 +362,7 @@ public class Neat{
 //	// Returns a normally distributed deviate with 0 mean and unit variance
 //	// Algorithm is from Numerical Recipes in C, Second Edition
 //	extern double gaussrand();
-	public double gaussrand(){
+	public static double gaussrand(){
 		int iset=0;
 		double gset = 0;
 		double fac,rsq,v1,v2;
@@ -387,7 +388,7 @@ public class Neat{
 //	//inline double gaussrand_wrong() {return (randposneg())*(sqrt(-log((rand()*1.0)/RAND_MAX)));}   
 //
 //	bool load_neat_params(const char *filename, bool output = false);
-	boolean load_neat_params(String filename, boolean output){
+	public static boolean load_neat_params(String filename, boolean output){
 //		std::ifstream paramFile(filename);
 		try{
 			InputStream is = new FileInputStream("filename");
@@ -399,7 +400,6 @@ public class Neat{
 		//covered by try-catch;
 		
 //		char curword[128];
-		char[] curword = new char[128];
 //		//char delimiters[] = " \n"; // tab = bad, CR(int 13) = bad in the file
 //		//char delimiters[] = " \t\n";
 //		//char delimiters[] = {' ', '\n', (char)13};
@@ -412,15 +412,150 @@ public class Neat{
 //		    printf("NEAT READING IN %s", filename);
 		if(output)
 			System.out.println("NEAT READING " + filename);
+		String currentLine;
+		String[] splitLine = new String[2];
+		
+		while ((currentLine = paramFile.readLine()) != null){
+			splitLine = currentLine.split(" ", 1);
+			if (splitLine[0] == "trait_param_mut_prob"){
+				trait_param_mut_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "trait_mutation_power"){
+				trait_mutation_power = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "linktrait_mut_sig"){
+				linktrait_mut_sig = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "nodetrait_mut_sig"){
+				nodetrait_mut_sig = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "weigh_mut_power"){
+				weigh_mut_power = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "recur_prob"){
+				recur_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "disjoint_coeff"){
+				disjoint_coeff = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "excess_coeff"){
+				excess_coeff = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutdiff_coeff"){
+				mutdiff_coeff = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "compat_thresh"){
+				compat_thresh = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "age_significance"){
+				age_significance = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "survival_thresh"){
+				survival_thresh = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_only_prob"){
+				mutate_only_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_random_trait_prob"){
+				mutate_random_trait_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_link_trait_prob"){
+				mutate_link_trait_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_node_trait_prob"){
+				mutate_node_trait_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_link_weights_prob"){
+				mutate_link_weights_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_toggle_enable_prob"){
+				mutate_toggle_enable_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_gene_reenable_prob"){
+				mutate_gene_reenable_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_add_node_prob"){
+				mutate_add_node_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mutate_add_link_prob"){
+				mutate_add_link_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "interspecies_mate_rate"){
+				interspecies_mate_rate = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mate_multipoint_prob"){
+				mate_multipoint_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mate_multipoint_avg_prob"){
+				mate_multipoint_avg_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mate_singlepoint_prob"){
+				mate_singlepoint_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "mate_only_prob"){
+				mate_only_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "recur_only_prob"){
+				recur_only_prob = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "pop_size"){
+				pop_size = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "dropoff_age"){
+				dropoff_age = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "newlink_tries"){
+				newlink_tries = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "print_every"){
+				print_every = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else if (splitLine[0] == "babies_stolen"){
+				babies_stolen = Integer.parseInt(splitLine[1]);
+				System.out.println(splitLine[0] + " set to " + splitLine[1]);
+			}
+			else {
+				System.out.println("Unexpected trait found in param file.");
+			}
+		} // end while loop
+		paramFile.close();
 //
 //		paramFile>>curword;
-		paramFile.read(curword);
 //		paramFile>>NEAT::trait_param_mut_prob;
-		paramFile.read(curword);
-		trait_param_mut_prob = Integer.parseInt(new String(curword));
-		System.out.println("Trait param mut prob = " + trait_param_mut_prob);
 //
 //		//strcpy(curword, getUnit(filestring, curwordnum, delimiters));
+		
 //		//NEAT::trait_param_mut_prob = atof(curword);
 //		//curwordnum += 2;
 //
@@ -644,7 +779,8 @@ public class Neat{
 //	    paramFile>>curword;
 //		paramFile>>NEAT::num_runs;
 		} catch(Exception e){
-			System.out.println("Trouble opening param file");
+			System.out.println("Neat had trouble opening param file");
+			System.out.println( e.getMessage());
 		}
 //		
 //
@@ -686,7 +822,7 @@ public class Neat{
 //
 //		paramFile.close();
 		return true;
-	}
+	} //end of load_neat_params(String, boolean)
 	
 	boolean load_neat_params(String filename){
 		return load_neat_params(filename, false);

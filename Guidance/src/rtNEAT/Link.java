@@ -16,6 +16,7 @@ package rtNEAT;
 //	// It can be marked as recurrent 
 //	// Its parameters are made public for efficiency 
 //	class Link {
+class Link{
 //	public: 
 //		double weight; // Weight of connection
 //		NNode *in_node; // NNode inputting into the link
@@ -48,6 +49,9 @@ package rtNEAT;
 //		void derive_trait(Trait *curtrait);
 //
 //	};
+	
+} // end of link class
+
 //
 //} // namespace NEAT
 //
