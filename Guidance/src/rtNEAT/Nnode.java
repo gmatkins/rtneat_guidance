@@ -1,5 +1,6 @@
 package rtNEAT;
 
+import java.io.BufferedWriter;
 import java.util.Vector;
 
 //#ifndef _NNODE_H_
@@ -276,10 +277,19 @@ class Nnode{
 //
 //		// Just return activation for step
 //		double get_active_out();
-	
+	public double get_active_out() {
+		if (activation_count>0)
+			return activation;
+		else return 0.0;
+	}
 //
 //		// Return activation from PREVIOUS time step
 //		double get_active_out_td();
+	public double get_active_out_td() {
+		if (activation_count>1)
+			return last_activation;
+		else return 0.0;
+	}
 //
 //		// Returns the type of the node, NEURON or SENSOR
 //		const nodetype get_type();
@@ -320,36 +330,198 @@ class Nnode{
 //
 //		// Adds a Link to a new NNode in the incoming List
 //		void add_incoming(NNode*,double,bool);
-	public void add_incoming(NNode *feednode,double weight) {
-		Link *newlink=new Link(weight,feednode,this,false);
-		incoming.push_back(newlink);
-		(feednode->outgoing).push_back(newlink);
+	public void add_incoming(Nnode feednode,double weight) {
+		Link newlink=new Link(weight,feednode,this,false);
+		incoming.add(newlink);
+		(feednode.outgoing).add(newlink);
 	}
 //
 //		// Recursively deactivate backwards through the network
 //		void flushback();
+	public void flushback() {
+		//std::vector<Link*>::iterator curlink;
+
+		//A sensor should not flush black
+		if (type!=nodetype.SENSOR) {
+
+			if (activation_count>0) {
+				activation_count=0;
+				activation=0;
+				last_activation=0;
+				last_activation2=0;
+			}
+
+			//Flush back recursively
+			for(Link curlink : incoming) {
+				//Flush the link itself (For future learning parameters possibility) 
+				(curlink).added_weight=0;
+				if ((((curlink).in_node).activation_count > 0))
+					((curlink).in_node).flushback();
+			}
+		}
+		else {
+			//Flush the SENSOR
+			activation_count=0;
+			activation=0;
+			last_activation=0;
+			last_activation2=0;
+
+		}
+
+	}
 //
 //		// Verify flushing for debugging
 //		void flushback_check(std::vector<NNode*> &seenlist);
+	public void flushback_check(Vector<Nnode> seenlist) {
+		//std::vector<Link*>::iterator curlink;
+		//int pause;
+		Vector<Link> innodes=incoming;
+		//Vector<Nnode>::iterator location;
+
+		if (!(type==nodetype.SENSOR)) {
+
+
+			//std::cout<<"ALERT: "<<this<<" has activation count "<<activation_count<<std::endl;
+			//std::cout<<"ALERT: "<<this<<" has activation  "<<activation<<std::endl;
+			//std::cout<<"ALERT: "<<this<<" has last_activation  "<<last_activation<<std::endl;
+			//std::cout<<"ALERT: "<<this<<" has last_activation2  "<<last_activation2<<std::endl;
+
+			if (activation_count>0) {
+				//std::cout<<"ALERT: "<<this<<" has activation count "<<activation_count<<std::endl;
+				System.out.println("ALERT " + this.toString() + " has activation count " + activation_count);
+			}
+
+			if (activation>0) {
+				//std::cout<<"ALERT: "<<this<<" has activation  "<<activation<<std::endl;
+				System.out.println("ALERT " + this.toString() + " has activation " + activation);
+			}
+
+			if (last_activation>0) {
+				//std::cout<<"ALERT: "<<this<<" has last_activation  "<<last_activation<<std::endl;
+				System.out.println("ALERT " + this.toString() + "has last_activation " + last_activation);
+			}
+
+			if (last_activation2>0) {
+				//std::cout<<"ALERT: "<<this<<" has last_activation2  "<<last_activation2<<std::endl;
+				System.out.println("ALERT " + this.toString() + " has last_activation2 " + last_activation2);
+			}
+
+			//for(curlink=innodes.begin();curlink!=innodes.end();++curlink) {
+			for (Link curlink : innodes){
+	            //location = std::find(seenlist.begin(),seenlist.end(),((*curlink)->in_node));
+				int location = seenlist.indexOf(curlink.in_node);
+				if (location==seenlist.capacity()) {
+					seenlist.add((curlink).in_node);
+					((curlink).in_node).flushback_check(seenlist);
+				}
+			}
+
+		}
+		else {
+			//Flush_check the SENSOR
+
+
+			//std::cout<<"sALERT: "<<this<<" has activation count "<<activation_count<<std::endl;
+			System.out.println("sALERT: " + this.toString() + " has activation count " + activation_count);
+			//std::cout<<"sALERT: "<<this<<" has activation  "<<activation<<std::endl;
+			System.out.println("sALERT: " + this.toString() + " has activation " + activation);
+			//std::cout<<"sALERT: "<<this<<" has last_activation  "<<last_activation<<std::endl;
+			System.out.println("sALERT: " + this.toString() + " has last_activation " + last_activation);
+			//std::cout<<"sALERT: "<<this<<" has last_activation2  "<<last_activation2<<std::endl;
+			System.out.println("sALERT: " + this.toString() + " has last_activation2 " + last_activation2);
+
+
+			if (activation_count>0) {
+				//std::cout<<"ALERT: "<<this<<" has activation count "<<activation_count<<std::endl;
+				System.out.println("ALERT: " + this.toString() + " has activation count " + activation_count);
+			}
+
+			if (activation>0) {
+				//std::cout<<"ALERT: "<<this<<" has activation  "<<activation<<std::endl;
+				System.out.println("ALERT: " + this.toString() + " has activation " + activation);
+
+			}
+
+			if (last_activation>0) {
+				//std::cout<<"ALERT: "<<this<<" has last_activation  "<<last_activation<<std::endl;
+				System.out.println("ALERT: " + this.toString() + " has last_activation " + last_activation);
+
+			}
+
+			if (last_activation2>0) {
+				//std::cout<<"ALERT: "<<this<<" has last_activation2  "<<last_activation2<<std::endl;
+				System.out.println("sALERT: " + this.toString() + " has last_activation2 " + last_activation2);
+
+			}
+
+		}
+
+	}
+
 //
 //		// Print the node to a file
 //        void  print_to_file(std::ostream &outFile);
 //	void print_to_file(std::ofstream &outFile);
+	public void print_to_file(BufferedWriter outFile) {
+		  //outFile<<"node "<<node_id<<" ";
+			try{
+			outFile.write("node " + node_id + " ");
+			  if (nodetrait!=null) 
+				  outFile.write(nodetrait.trait_id + " ");
+			  else outFile.write("0 ");
+			  
+			  outFile.write(type + " ");
+			  outFile.write(gen_node_label + "\n");
+			} catch(Exception e){
+				System.out.println("Nnode had trouble writing to file.");
+				System.out.println(e.getMessage());
+			}
+	}
 //
 //		// Have NNode gain its properties from the trait
 //		void derive_trait(Trait *curtrait);
+	public void derive_trait(Trait curtrait) {
+
+		if (curtrait!=null) {
+			for (int count=0;count<Neat.NUM_TRAIT_PARAMS;count++)
+				params[count]=(curtrait.params)[count];
+		}
+		else {
+			for (int count=0;count<Neat.NUM_TRAIT_PARAMS;count++)
+				params[count]=0;
+		}
+
+		if (curtrait!=null)
+			trait_id=curtrait.trait_id;
+		else trait_id=1;
+
+	}
 //
 //		// Returns the gene that created the node
 //		NNode *get_analogue();
+	public Nnode get_analogue() {
+		return analogue;
+	}
 //
 //		// Force an output value on the node
 //		void override_output(double new_output);
+	public void override_output(double new_output) {
+		override_value=new_output;
+		override=true;
+	}
 //
 //		// Tell whether node has been overridden
 //		bool overridden();
+	public boolean overridden() {
+		return override;
+	}
 //
 //		// Set activation to the override value and turn off override
-//		void activate_override();  
+//		void activate_override();
+	public void activate_override() {
+		activation=override_value;
+		override=false;
+	}
 //
 //		// Writes back changes weight values into the genome
 //		// (Lamarckian trasnfer of characteristics)
@@ -357,6 +529,36 @@ class Nnode{
 //
 //		//Find the greatest depth starting from this neuron at depth d
 //		int depth(int d,Network *mynet); 
+	public int depth(int d, Network mynet) {
+		  //std::vector<Link*> innodes=this->incoming;
+		Vector<Link> innodes = incoming;
+		  //std::vector<Link*>::iterator curlink;
+		  int cur_depth; //The depth of the current node
+		  int max=d; //The max depth
+
+		  if (d>100) {
+		    //std::cout<<mynet->genotype<<std::endl;
+		    //std::cout<<"** DEPTH NOT DETERMINED FOR NETWORK WITH LOOP"<<std::endl;
+		    return 10;
+		  }
+
+		  //Base Case
+		  if ((this.type)==nodetype.SENSOR)
+		    return d;
+		  //Recursion
+		  else {
+
+		    //for(curlink=innodes.begin();curlink!=innodes.end();++curlink) {
+			  for(Link curlink: innodes){
+		      cur_depth=((curlink).in_node).depth(d+1,mynet);
+		      if (cur_depth>max) max=cur_depth;
+		    }
+		  
+		    return max;
+
+		  } //end else
+
+		}
 //
 //	};
 //
