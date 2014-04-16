@@ -11,6 +11,7 @@ package rtNEAT;
 //namespace NEAT {
 //
 //	class Gene {
+class Gene{
 //	public:
 //
 //		Link *lnk;
@@ -40,6 +41,9 @@ package rtNEAT;
 //        void print_to_file(std::ostream &outFile);
 //	void print_to_file(std::ofstream &outFile);
 //	};
+	
+} //end of class Gene
+
 //
 //} // namespace NEAT
 //

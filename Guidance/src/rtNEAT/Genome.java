@@ -1,5 +1,7 @@
 package rtNEAT;
 
+import java.util.Vector;
+
 //#ifndef _GENOME_H_
 //#define _GENOME_H_
 //
@@ -33,12 +35,17 @@ class Genome{
 //
 //	public:
 //		int genome_id;
+	public int genome_id;
 //
 //		std::vector<Trait*> traits; //parameter conglomerations
+	public Vector<Trait> traits;
 //		std::vector<NNode*> nodes; //List of NNodes for the Network
+	public Vector<Nnode> nodes;
 //		std::vector<Gene*> genes; //List of innovation-tracking genes
+	public Vector<Gene> genes;
 //
 //		Network *phenotype; //Allows Genome to be matched with its Network
+	public Network phenotype;
 //
 //		int get_last_node_id(); //Return id of final NNode in Genome
 //		double get_last_gene_innovnum(); //Return last innovation number in Genome
@@ -47,9 +54,33 @@ class Genome{
 //
 //		//Constructor which takes full genome specs and puts them into the new one
 //		Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector<Gene*> g);
+//	public Genome(int id, Vector<Trait> t, Vector<Nnode> n, Vector<Gene> g) {
+//		genome_id=id;
+//		traits= new Vector<Trait>(t);
+//		nodes= new Vector<Nnode>(n); 
+//		genes= new Vector<Gene>(g);
+//	}
 //
 //		//Constructor which takes in links (not genes) and creates a Genome
 //		Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector<Link*> links);
+	public Genome(int id, Vector<Trait> t, Vector<Nnode> n, Vector<Gene> g, Vector<Link> links) {
+		//std::vector<Link*>::iterator curlink;
+		Gene tempgene;
+		if (t != null) traits= new Vector<Trait>(t);
+		if (n != null) nodes= new Vector<Nnode>(n); 
+		if (g != null) genes= new Vector<Gene>(g);
+
+		genome_id=id;
+
+		//We go through the links and turn them into original genes
+		//for(curlink=links.begin();curlink!=links.end();++curlink) {
+		for (Link curlink : links){
+			//Create genes one at a time
+			tempgene=new Gene((curlink).linktrait, (curlink).weight,(curlink).in_node,(curlink).out_node,(curlink).is_recurrent,1.0,0.0);
+			genes.add(tempgene);
+		}
+
+	}
 //
 //		// Copy constructor
 //		Genome(const Genome& genome);
