@@ -645,8 +645,24 @@ class Network{
 		}
 
 	} //print_links_tofile
+	
+	
 //
 //		int max_depth();
+	public int max_depth() {
+		  //Vector<Nnode>::iterator curoutput; //The current output we are looking at
+		  int cur_depth; //The depth of the current node
+		  int max=0; //The max depth
+		  
+		  //for(curoutput=outputs.begin();curoutput!=outputs.end();curoutput++) {
+		  for (Nnode curoutput: outputs){
+		    cur_depth=(curoutput).depth(0,this);
+		    if (cur_depth>max) max=cur_depth;
+		  }
+
+		  return max;
+
+		}
 //
 //	};
 	
