@@ -121,7 +121,7 @@ class Trait{
 //
 //		// Perturb the trait parameters slightly
 //		void mutate();
-	public void mutate() {
+	public Trait mutate() {
 		for(int count=0;count<Neat.NUM_TRAIT_PARAMS;count++) {
 			if (Neat.randfloat()>Neat.trait_param_mut_prob) {
 				params[count]+=(Neat.randposneg()*Neat.randfloat())*Neat.trait_mutation_power;
@@ -129,6 +129,7 @@ class Trait{
 				if (params[count]>1.0) params[count]=1.0;
 			}
 		}
+		return this;
 	}
 //
 //	};
