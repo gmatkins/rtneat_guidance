@@ -116,7 +116,7 @@ class Genome{
 			traits.add(new Trait(curtrait));
 		}
 
-		Trait assoc_trait;
+		Trait assoc_trait = new Trait();
 		//Duplicate NNodes
 		//for(curnode=genome.nodes.begin();curnode!=genome.nodes.end();++curnode) {
 		for(Nnode curnode : genome.nodes){
@@ -179,144 +179,148 @@ class Genome{
 //		//This constructor assumes that some routine has already read in GENOMESTART
 //        Genome(int id, std::ifstream &iFile);
 	public Genome(int id, BufferedReader iFile) {
-
-		//char curword[128];  //max word size of 128 characters
-		String curword;
-//		char curline[1024]; //max line size of 1024 characters
-		String curline;
-//		char delimiters[] = " \n";
-		String delimeters = new String(" \n");
-
-		//int done=0;
-		boolean done = false;
-
-		//int pause;
-
-		genome_id=id;
-
-		//iFile.getline(curline, sizeof(curline));
-		curline = iFile.readLine();
-		//int wordcount = NEAT::getUnitCount(curline, delimiters);
-		int wordcount = Neat.getUnitCount(curline, delimeters);
-		int curwordnum = 0;
-
-		//Loop until file is finished, parsing each line
-		while (!done) {
-
-	        //std::cout << curline << std::endl;
-
-			if (curwordnum > wordcount || wordcount == 0) {
-				//iFile.getline(curline, sizeof(curline));
-				curline = iFile.readLine();
-				//wordcount = NEAT::getUnitCount(curline, delimiters);
-				wordcount = Neat.getUnitCount(curline, delimeters);
-				curwordnum = 0;
-			}
-	        
-	        //std::stringstream ss(curline);
-			//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
-	       // ss >> curword;
-			curword = curline.split(" ", 2)[0];
-			curline = new String(curline.split(" ", 2)[1]);
-
-			//printf(curword);
-			//printf(" test\n");
-			//Check for end of Genome
-			//if (strcmp(curword,"genomeend")==0) {
-			if (curword == "genomeend"){
+		try{
+			//char curword[128];  //max word size of 128 characters
+			String curword;
+	//		char curline[1024]; //max line size of 1024 characters
+			String curline;
+	//		char delimiters[] = " \n";
+			String delimeters = new String(" \n");
+	
+			//int done=0;
+			boolean done = false;
+	
+			//int pause;
+	
+			genome_id=id;
+	
+			//iFile.getline(curline, sizeof(curline));
+			curline = iFile.readLine();
+			//int wordcount = NEAT::getUnitCount(curline, delimiters);
+			int wordcount = Neat.getUnitCount(curline, delimeters);
+			int curwordnum = 0;
+	
+			//Loop until file is finished, parsing each line
+			while (!done) {
+	
+		        //std::cout << curline << std::endl;
+	
+				if (curwordnum > wordcount || wordcount == 0) {
+					//iFile.getline(curline, sizeof(curline));
+					curline = iFile.readLine();
+					//wordcount = NEAT::getUnitCount(curline, delimiters);
+					wordcount = Neat.getUnitCount(curline, delimeters);
+					curwordnum = 0;
+				}
+		        
+		        //std::stringstream ss(curline);
 				//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
-	            //ss >> curword;
+		       // ss >> curword;
 				curword = curline.split(" ", 2)[0];
 				curline = new String(curline.split(" ", 2)[1]);
-				int idcheck = Integer.parseInt(curword);
-				//iFile>>idcheck;
-				if (idcheck!=genome_id) System.out.println("ERROR: id mismatch in genome");
-				done=true;
-			}
-
-			//Ignore genomestart if it hasn't been gobbled yet
-			else if ((curword == "genomestart")) {
-				++curwordnum;
-				//cout<<"genomestart"<<endl;
-			}
-
-			//Ignore comments surrounded by - they get printed to screen
-			else if ((curword == "/*")) {
-				//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
-	            //ss >> curword;
-	            curword = curline.split(" ", 2)[0];
-				curline = new String(curline.split(" ", 2)[1]);
-				while ((curword != "*/")) {
-					//cout<<curword<<" ";
+	
+				//printf(curword);
+				//printf(" test\n");
+				//Check for end of Genome
+				//if (strcmp(curword,"genomeend")==0) {
+				if (curword == "genomeend"){
 					//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
-	                //ss >> curword;
-	                curword = curline.split(" ", 2)[0];
+		            //ss >> curword;
+					curword = curline.split(" ", 2)[0];
 					curline = new String(curline.split(" ", 2)[1]);
+					int idcheck = Integer.parseInt(curword);
+					//iFile>>idcheck;
+					if (idcheck!=genome_id) System.out.println("ERROR: id mismatch in genome");
+					done=true;
 				}
-				//cout<<endl;
+	
+				//Ignore genomestart if it hasn't been gobbled yet
+				else if ((curword == "genomestart")) {
+					++curwordnum;
+					//cout<<"genomestart"<<endl;
+				}
+	
+				//Ignore comments surrounded by - they get printed to screen
+				else if ((curword == "/*")) {
+					//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+		            //ss >> curword;
+		            curword = curline.split(" ", 2)[0];
+					curline = new String(curline.split(" ", 2)[1]);
+					while ((curword != "*/")) {
+						//cout<<curword<<" ";
+						//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+		                //ss >> curword;
+		                curword = curline.split(" ", 2)[0];
+						curline = new String(curline.split(" ", 2)[1]);
+					}
+					//cout<<endl;
+				}
+	
+				//Read in a trait
+				else if ((curword == "trait")) {
+					Trait newtrait;
+	
+					//char argline[1024];
+					String argline;
+					//strcpy(argline, NEAT::getUnits(curline, curwordnum, wordcount, delimiters));
+	
+					curwordnum = wordcount + 1;
+	
+		            //ss.getline(argline, 1024);
+					argline = curline.split("\n", 2)[0];
+					curline = curline.split("\n", 2)[1];
+					//Allocate the new trait
+					newtrait=new Trait(argline);
+	
+					//Add trait to vector of traits
+					traits.add(newtrait);
+				}
+	
+				//Read in a node
+				else if ((curword == "node")) {
+					Nnode newnode;
+	
+					//char argline[1024];
+					String argline;
+					//strcpy(argline, NEAT::getUnits(curline, curwordnum, wordcount, delimiters));
+					curwordnum = wordcount + 1;
+		            
+		            //ss.getline(argline, 1024);
+					argline = curline.split("\n", 2)[0];
+					curline = curline.split("\n", 2)[1];
+					//Allocate the new node
+					newnode=new Nnode(argline,traits);
+	
+					//Add the node to the list of nodes
+					nodes.add(newnode);
+				}
+	
+				//Read in a Gene
+				else if ((curword == "gene")) {
+					Gene newgene;
+	
+					//char argline[1024];
+					String argline;
+					//strcpy(argline, NEAT::getUnits(curline, curwordnum, wordcount, delimiters));
+					curwordnum = wordcount + 1;
+	
+		            //ss.getline(argline, 1024);
+					argline = curline.split("\n", 2)[0];
+					curline = curline.split("\n", 2)[1];
+		            //std::cout << "New gene: " << ss.str() << std::endl;
+					//Allocate the new Gene
+		            newgene=new Gene(argline,traits,nodes);
+	
+					//Add the gene to the genome
+					genes.add(newgene);
+	
+		            //std::cout<<"Added gene " << newgene << std::endl;
+				}
+	
 			}
-
-			//Read in a trait
-			else if ((curword == "trait")) {
-				Trait newtrait;
-
-				//char argline[1024];
-				String argline;
-				//strcpy(argline, NEAT::getUnits(curline, curwordnum, wordcount, delimiters));
-
-				curwordnum = wordcount + 1;
-
-	            //ss.getline(argline, 1024);
-				argline = curline.split("\n", 2)[0];
-				curline = curline.split("\n", 2)[1];
-				//Allocate the new trait
-				newtrait=new Trait(argline);
-
-				//Add trait to vector of traits
-				traits.add(newtrait);
-			}
-
-			//Read in a node
-			else if ((curword == "node")) {
-				Nnode newnode;
-
-				//char argline[1024];
-				String argline;
-				//strcpy(argline, NEAT::getUnits(curline, curwordnum, wordcount, delimiters));
-				curwordnum = wordcount + 1;
-	            
-	            //ss.getline(argline, 1024);
-				argline = curline.split("\n", 2)[0];
-				curline = curline.split("\n", 2)[1];
-				//Allocate the new node
-				newnode=new Nnode(argline,traits);
-
-				//Add the node to the list of nodes
-				nodes.add(newnode);
-			}
-
-			//Read in a Gene
-			else if ((curword == "gene")) {
-				Gene newgene;
-
-				//char argline[1024];
-				String argline;
-				//strcpy(argline, NEAT::getUnits(curline, curwordnum, wordcount, delimiters));
-				curwordnum = wordcount + 1;
-
-	            //ss.getline(argline, 1024);
-				argline = curline.split("\n", 2)[0];
-				curline = curline.split("\n", 2)[1];
-	            //std::cout << "New gene: " << ss.str() << std::endl;
-				//Allocate the new Gene
-	            newgene=new Gene(argline,traits,nodes);
-
-				//Add the gene to the genome
-				genes.add(newgene);
-
-	            //std::cout<<"Added gene " << newgene << std::endl;
-			}
-
+		}catch(Exception e){
+			System.out.println("Genome has had trouble reading from file");
+			System.out.println(e.getMessage());
 		}
 
 	}
@@ -328,7 +332,7 @@ class Genome{
 //		// The last input is a bias
 //		// Linkprob is the probability of a link  
 //		Genome(int new_id,int i, int o, int n,int nmax, bool r, double linkprob);
-	public Genome(int new_id,int i, int o, int n,int nmax, bool r, double linkprob) {
+	public Genome(int new_id,int i, int o, int n,int nmax, boolean r, double linkprob) {
 		int totalnodes;
 		boolean[] cm; //The connection matrix which will be randomized
 		boolean[] cmp; //Connection matrix pointer
@@ -358,8 +362,8 @@ class Genome{
 		Nnode newnode;
 		Gene newgene;
 		Trait newtrait;
-		NNode in_node;
-		NNode out_node;
+		Nnode in_node = null;
+		Nnode out_node = null;
 
 		//Retrieves the nodes pointed to by connection genes
 		//Vector<Nnode>::iterator node_iter;
@@ -515,10 +519,10 @@ class Genome{
 	public Genome(int num_in,int num_out,int num_hidden,int type) {
 
 		//Temporary lists of nodes
-		Vector<Nnode> inputs;
-		Vector<Nnode> outputs;
-		Vector<Nnode> hidden;
-		Nnode bias; //Remember the bias
+		Vector<Nnode> inputs = new Vector<Nnode>();
+		Vector<Nnode> outputs = new Vector<Nnode>();
+		Vector<Nnode> hidden = new Vector<Nnode>();
+		Nnode bias = null; //Remember the bias
 
 //		std::vector<NNode*>::iterator curnode1; //Node iterator1
 //		std::vector<NNode*>::iterator curnode2; //Node iterator2
@@ -663,7 +667,7 @@ class Genome{
 
 			//Connect all hidden units to all outputs
 			//for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
-			for (Nnode curnode1 ; outputs){
+			for (Nnode curnode1 : outputs){
 				//Loop over the inputs
 				//for(curnode2=hidden.begin();curnode2!=hidden.end();++curnode2) {
 				for (Nnode curnode2 : hidden){
@@ -793,9 +797,9 @@ class Genome{
 		//Inputs and outputs will be collected here for the network
 		//All nodes are collected in an all_list- 
 		//this will be used for later safe destruction of the net
-		Vector<Nnode> inlist;
-		Vector<Nnode> outlist;
-		Vector<Nnode> all_list;
+		Vector<Nnode> inlist = null;
+		Vector<Nnode> outlist = null;
+		Vector<Nnode> all_list = null;
 
 		//Gene translation variables
 		Nnode inode;
@@ -878,34 +882,38 @@ class Genome{
 		  //std::vector<Trait*>::iterator curtrait;
 		  //std::vector<NNode*>::iterator curnode;
 		  //std::vector<Gene*>::iterator curgene;
-
-		  //outFile<<"genomestart "<<genome_id<<std::endl;
-		outFile.write("genomestart " + genome_id + "\n");
-
-		  //Output the traits
-		  //for(curtrait=traits.begin();curtrait!=traits.end();++curtrait) {
-		for(Trait curtrait : traits){
-//		    (curtrait).trait_id=curtrait-traits.begin()+1;
-//		    (*curtrait)->print_to_file(outFile);
-			curtrait.print_to_file(outFile);
-		  }
-
-		  //Output the nodes
-		  //for(curnode=nodes.begin();curnode!=nodes.end();++curnode) {
-		for(Nnode curnode : nodes){
-		    //(*curnode)->print_to_file(outFile);
-			curnode.print_to_file(outFile);
-		  }
-
-		  //Output the genes
-		  //for(curgene=genes.begin();curgene!=genes.end();++curgene) {
-		for(Gene curgene : genes){
-		    //(*curgene)->print_to_file(outFile);
-			curgene.print_to_file(outFile);
-		  }
-
-		  //outFile<<"genomeend "<<genome_id<<std::endl;
-		outFile.write("genomeend" + genome_id + "\n");
+		try{
+			  //outFile<<"genomestart "<<genome_id<<std::endl;
+			outFile.write("genomestart " + genome_id + "\n");
+	
+			  //Output the traits
+			  //for(curtrait=traits.begin();curtrait!=traits.end();++curtrait) {
+			for(Trait curtrait : traits){
+	//		    (curtrait).trait_id=curtrait-traits.begin()+1;
+	//		    (*curtrait)->print_to_file(outFile);
+				curtrait.print_to_file(outFile);
+			  }
+	
+			  //Output the nodes
+			  //for(curnode=nodes.begin();curnode!=nodes.end();++curnode) {
+			for(Nnode curnode : nodes){
+			    //(*curnode)->print_to_file(outFile);
+				curnode.print_to_file(outFile);
+			  }
+	
+			  //Output the genes
+			  //for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+			for(Gene curgene : genes){
+			    //(*curgene)->print_to_file(outFile);
+				curgene.print_to_file(outFile);
+			  }
+	
+			  //outFile<<"genomeend "<<genome_id<<std::endl;
+			outFile.write("genomeend" + genome_id + "\n");
+		}catch(Exception e){
+			System.out.println("Genome had trouble writing to fiel.");
+			System.out.println(e.getMessage());
+		}
 
 		}
 //
@@ -929,9 +937,9 @@ class Genome{
 //		Genome *duplicate(int new_id);
 	public Genome duplicate(int new_id) {
 		//Collections for the new Genome
-		Vector<Trait> traits_dup;
-		Vector<Nnode> nodes_dup;
-		Vector<Gene> genes_dup;
+		Vector<Trait> traits_dup = new Vector<Trait>();
+		Vector<Nnode> nodes_dup = new Vector<Nnode>();
+		Vector<Gene> genes_dup = new Vector<Gene>();
 
 		//Iterators for the old Genome
 		//std::vector<Trait*>::iterator curtrait;
@@ -939,14 +947,14 @@ class Genome{
 		//std::vector<Gene*>::iterator curgene;
 
 		//New item pointers
-		Trait newtrait;
-		Nnode newnode;
-		Gene newgene;
-		Trait assoc_trait;  //Trait associated with current item
+		Trait newtrait = null;
+		Nnode newnode = null;
+		Gene newgene = null;
+		Trait assoc_trait = null;  //Trait associated with current item
 
-		NNode inode; //For forming a gene 
-		NNode onode; //For forming a gene
-		Trait traitptr;
+		Nnode inode = null; //For forming a gene 
+		Nnode onode = null; //For forming a gene
+		Trait traitptr = null;
 
 		Genome newgenome;
 
@@ -1000,7 +1008,7 @@ class Genome{
 //					++curtrait;
 //				assoc_trait=(*curtrait);
 				for (Trait curtrait : traits){
-					if(curtrait.trait_id != curnode.nodetrait.trait_id) continue;
+					if(curtrait.trait_id != traitptr.trait_id) continue;
 					assoc_trait = new Trait(curtrait);
 					break;
 				}
