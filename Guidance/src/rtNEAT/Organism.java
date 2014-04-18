@@ -27,7 +27,7 @@ import java.io.OutputStreamWriter;
 //	//   i.e. The genotype and phenotype together
 //	// ---------------------------------------------  
 //	class Organism {
-class Organism{
+class Organism implements Comparable<Organism>{
 //
 //	public:
 //		double fitness;  //A measure of fitness for the Organism
@@ -209,6 +209,12 @@ class Organism{
 //	bool order_orgs(Organism *x, Organism *y);
 //
 //	bool order_orgs_by_adjusted_fit(Organism *x, Organism *y);
+	@Override
+	public int compareTo(Organism org) {
+		if (Organism.order_orgs(this, org)) return 1;
+		else if (Organism.order_orgs(org, this)) return -1;
+		else return 0;
+	}
 	
 } // end of Organism class
 	
