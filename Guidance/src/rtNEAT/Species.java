@@ -20,6 +20,7 @@ package rtNEAT;
 //	//   can mate.                                      
 //	// ---------------------------------------------  
 //	class Species {
+class Species {
 //
 //	public:
 //
@@ -110,6 +111,9 @@ package rtNEAT;
 //	bool order_new_species(Species *x, Species *y);
 //
 //}
+	
+} // end of Species class
+	
 //
 //#endif
 //

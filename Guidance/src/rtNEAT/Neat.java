@@ -391,7 +391,7 @@ public class Neat{
 	public static boolean load_neat_params(String filename, boolean output){
 //		std::ifstream paramFile(filename);
 		try{
-			InputStream is = new FileInputStream("filename");
+			InputStream is = new FileInputStream(filename);
 			BufferedReader paramFile = new BufferedReader(new InputStreamReader(is));
 //
 //		if(!paramFile) {
