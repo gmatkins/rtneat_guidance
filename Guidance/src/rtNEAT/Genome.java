@@ -1,6 +1,14 @@
 package rtNEAT;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Vector;
 
 //#ifndef _GENOME_H_
@@ -33,6 +41,8 @@ import java.util.Vector;
 //
 //	class Genome {
 class Genome{
+	
+	public enum mutator {GAUSSIAN, COLDGAUSSIAN};
 //
 //	public:
 //		int genome_id;
@@ -49,7 +59,14 @@ class Genome{
 	public Network phenotype;
 //
 //		int get_last_node_id(); //Return id of final NNode in Genome
+	public int get_last_node_id() {
+		return nodes.lastElement().node_id;
+	}
 //		double get_last_gene_innovnum(); //Return last innovation number in Genome
+	public double get_last_gene_innovnum() {
+		//return ((*(genes.end() - 1))->innovation_num)+1;
+		return genes.lastElement().innovation_num;
+	}
 //
 //		void print_genome(); //Displays Genome on screen
 //
@@ -495,7 +512,7 @@ class Genome{
 //		//2 - Fully connected with a hidden layer, recurrent 
 //		//num_hidden is only used in type 2
 //		Genome(int num_in,int num_out,int num_hidden,int type);
-	Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
+	public Genome(int num_in,int num_out,int num_hidden,int type) {
 
 		//Temporary lists of nodes
 		Vector<Nnode> inputs;
@@ -521,7 +538,7 @@ class Genome{
 
 		//Create a dummy trait (this is for future expansion of the system)
 		newtrait=new Trait(1,0,0,0,0,0,0,0,0,0);
-		traits.push_back(newtrait);
+		traits.add(newtrait);
 
 		//Adjust hidden number
 		if (type==0) 
@@ -534,35 +551,35 @@ class Genome{
 		//Build the input nodes
 		for(ncount=1;ncount<=num_in;ncount++) {
 			if (ncount<num_in)
-				newnode=new NNode(SENSOR,ncount,INPUT);
+				newnode=new Nnode(Nnode.nodetype.SENSOR,ncount,Nnode.nodeplace.INPUT);
 			else { 
-				newnode=new NNode(SENSOR,ncount,BIAS);
+				newnode=new Nnode(Nnode.nodetype.SENSOR,ncount,Nnode.nodeplace.BIAS);
 				bias=newnode;
 			}
 
 			//newnode->nodetrait=newtrait;
 
 			//Add the node to the list of nodes
-			nodes.push_back(newnode);
-			inputs.push_back(newnode);
+			nodes.add(newnode);
+			inputs.add(newnode);
 		}
 
 		//Build the hidden nodes
 		for(ncount=num_in+1;ncount<=num_in+num_hidden;ncount++) {
-			newnode=new NNode(NEURON,ncount,HIDDEN);
+			newnode=new Nnode(Nnode.nodetype.NEURON,ncount,Nnode.nodeplace.HIDDEN);
 			//newnode->nodetrait=newtrait;
 			//Add the node to the list of nodes
-			nodes.push_back(newnode);
-			hidden.push_back(newnode);
+			nodes.add(newnode);
+			hidden.add(newnode);
 		}
 
 		//Build the output nodes
 		for(ncount=num_in+num_hidden+1;ncount<=num_in+num_hidden+num_out;ncount++) {
-			newnode=new NNode(NEURON,ncount,OUTPUT);
+			newnode=new Nnode(Nnode.nodetype.NEURON,ncount,Nnode.nodeplace.OUTPUT);
 			//newnode->nodetrait=newtrait;
 			//Add the node to the list of nodes
-			nodes.push_back(newnode);
-			outputs.push_back(newnode);
+			nodes.add(newnode);
+			outputs.add(newnode);
 		}
 
 		//Create the links depending on the type
@@ -572,14 +589,16 @@ class Genome{
 			count=1;
 
 			//Loop over the outputs
-			for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			//for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			for (Nnode curnode1 : outputs){
 				//Loop over the inputs
-				for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				//for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				for (Nnode curnode2 : inputs){
 					//Connect each input to each output
-					newgene=new Gene(newtrait,0, (*curnode2), (*curnode1),false,count,0);
+					newgene=new Gene(newtrait,0, (curnode2), (curnode1),false,count,0);
 
 					//Add the gene to the genome
-					genes.push_back(newgene);	 
+					genes.add(newgene);	 
 
 					count++;
 
@@ -592,23 +611,26 @@ class Genome{
 		else if (type==1) {
 			count=1; //Start the gene number counter
 
-			curnode3=hidden.begin(); //One hidden for ever input-output pair
+			//curnode3=hidden.begin(); //One hidden for ever input-output pair
+			int curnode3 = 0;
 			//Loop over the outputs
-			for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			//for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			for (Nnode curnode1 : outputs){
 				//Loop over the inputs
-				for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				//for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				for (Nnode curnode2 : inputs){
 
 					//Connect Input to hidden
-					newgene=new Gene(newtrait,0, (*curnode2), (*curnode3),false,count,0);
+					newgene=new Gene(newtrait,0, (curnode2), (hidden.get(curnode3)),false,count,0);
 					//Add the gene to the genome
-					genes.push_back(newgene);
+					genes.add(newgene);
 
 					count++; //Next gene
 
 					//Connect hidden to output
-					newgene=new Gene(newtrait,0, (*curnode3), (*curnode1),false,count,0);
+					newgene=new Gene(newtrait,0, (hidden.get(curnode3)), (curnode1),false,count,0);
 					//Add the gene to the genome
-					genes.push_back(newgene);
+					genes.add(newgene);
 
 					++curnode3; //Next hidden node
 					count++; //Next gene
@@ -623,14 +645,16 @@ class Genome{
 
 
 			//Connect all inputs to all hidden nodes
-			for(curnode1=hidden.begin();curnode1!=hidden.end();++curnode1) {
+			//for(curnode1=hidden.begin();curnode1!=hidden.end();++curnode1) {
+			for (Nnode curnode1 : hidden){
 				//Loop over the inputs
-				for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				//for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				for(Nnode curnode2 : inputs){
 					//Connect each input to each hidden
-					newgene=new Gene(newtrait,0, (*curnode2), (*curnode1),false,count,0);
+					newgene=new Gene(newtrait,0, (curnode2), (curnode1),false,count,0);
 
 					//Add the gene to the genome
-					genes.push_back(newgene);	 
+					genes.add(newgene);	 
 
 					count++;
 
@@ -638,14 +662,16 @@ class Genome{
 			}
 
 			//Connect all hidden units to all outputs
-			for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			//for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			for (Nnode curnode1 ; outputs){
 				//Loop over the inputs
-				for(curnode2=hidden.begin();curnode2!=hidden.end();++curnode2) {
+				//for(curnode2=hidden.begin();curnode2!=hidden.end();++curnode2) {
+				for (Nnode curnode2 : hidden){
 					//Connect each input to each hidden
-					newgene=new Gene(newtrait,0, (*curnode2), (*curnode1),false,count,0);
+					newgene=new Gene(newtrait,0, (curnode2), (curnode1),false,count,0);
 
 					//Add the gene to the genome
-					genes.push_back(newgene);	 
+					genes.add(newgene);	 
 
 					count++;
 
@@ -653,24 +679,27 @@ class Genome{
 			}
 
 			//Connect the bias to all outputs
-			for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
-				newgene=new Gene(newtrait,0, bias, (*curnode1),false,count,0);
+			//for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
+			for (Nnode curnode1 : outputs){
+				newgene=new Gene(newtrait,0, bias, (curnode1),false,count,0);
 
 				//Add the gene to the genome
-				genes.push_back(newgene);	 
+				genes.add(newgene);	 
 
 				count++;
 			}
 
 			//Recurrently connect the hidden nodes
-			for(curnode1=hidden.begin();curnode1!=hidden.end();++curnode1) {
+			//for(curnode1=hidden.begin();curnode1!=hidden.end();++curnode1) {
+			for (Nnode curnode1 : hidden){
 				//Loop Over all Hidden
-				for(curnode2=hidden.begin();curnode2!=hidden.end();++curnode2) {
+				//for(curnode2=hidden.begin();curnode2!=hidden.end();++curnode2) {
+				for (Nnode curnode2 : hidden){
 					//Connect each hidden to each hidden
-					newgene=new Gene(newtrait,0, (*curnode2), (*curnode1),true,count,0);
+					newgene=new Gene(newtrait,0, (curnode2), (curnode1),true,count,0);
 
 					//Add the gene to the genome
-					genes.push_back(newgene);	 
+					genes.add(newgene);	 
 
 					count++;
 
@@ -684,19 +713,217 @@ class Genome{
 //
 //		// Loads a new Genome from a file (doesn't require knowledge of Genome's id)
 //		static Genome *new_Genome_load(char *filename);
+	public static Genome new_Genome_load(String filename) {
+		Genome newgenome;
+
+		int id;
+
+		//char curline[1024];
+		char curword[] = new char[20];  //max word size of 20 characters
+		//String curword;
+		//char delimiters[] = " \n";
+		//int curwordnum = 0;
+
+		//std::ifstream iFile(filename);
+		try{
+			InputStream is = new FileInputStream("filename");
+			BufferedReader iFile = new BufferedReader(new InputStreamReader(is));
+
+		//Make sure it worked
+		//if (!iFile) {
+		//	cerr<<"Can't open "<<filename<<" for input"<<endl;
+		//	return 0;
+		//}
+
+		//iFile>>curword;
+		iFile.read(curword);	
+		//iFile.getline(curline, sizeof(curline));
+		//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+
+		//Bypass initial comment
+		if ((new String(curword) == "/*")) {
+			//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+			//iFile>>curword;
+			iFile.read(curword);
+			while ((new String(curword) != "*/")) {
+				System.out.println(curword);
+				//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+				//iFile>>curword;
+				iFile.read(curword);
+			}
+
+			//cout<<endl;
+			//iFile>>curword;
+			iFile.read(curword);
+			//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+		}
+
+		//strcpy(curword, NEAT::getUnit(curline, curwordnum++, delimiters));
+		//id = atoi(curword);
+		//iFile>>id;
+		id = iFile.read();
+
+		newgenome=new Genome(id,iFile);
+
+		iFile.close();
+		return newgenome;
+		}catch(Exception e){
+			System.out.println("trouble constructing new Genome from file");
+			System.out.println(e.getMessage());
+			return null;
+		}	
+	}
 //
 //		//Destructor kills off all lists (including the trait vector)
 //		~Genome();
 //
 //		//Generate a network phenotype from this Genome with specified id
 //		Network *genesis(int);
+	public Network genesis(int id) {
+		//std::vector<NNode*>::iterator curnode; 
+		//std::vector<Gene*>::iterator curgene;
+		Nnode newnode;
+		Trait curtrait;
+		Link curlink;
+		Link newlink;
+
+		double maxweight=0.0; //Compute the maximum weight for adaptation purposes
+		double weight_mag; //Measures absolute value of weights
+
+		//Inputs and outputs will be collected here for the network
+		//All nodes are collected in an all_list- 
+		//this will be used for later safe destruction of the net
+		Vector<Nnode> inlist;
+		Vector<Nnode> outlist;
+		Vector<Nnode> all_list;
+
+		//Gene translation variables
+		Nnode inode;
+		Nnode onode;
+
+		//The new network
+		Network newnet;
+
+		//Create the nodes
+		//for(curnode=nodes.begin();curnode!=nodes.end();++curnode) {
+		for(Nnode curnode : nodes){
+			newnode=new Nnode((curnode).type,(curnode).node_id);
+
+			//Derive the node parameters from the trait pointed to
+			curtrait=(curnode).nodetrait;
+			newnode.derive_trait(curtrait);
+
+			//Check for input or output designation of node
+			if (((curnode).gen_node_label)== Nnode.nodeplace.INPUT) 
+				inlist.add(newnode);
+			if (((curnode).gen_node_label)== Nnode.nodeplace.BIAS) 
+				inlist.add(newnode);
+			if (((curnode).gen_node_label)== Nnode.nodeplace.OUTPUT)
+				outlist.add(newnode);
+
+			//Keep track of all nodes, not just input and output
+			all_list.add(newnode);
+
+			//Have the node specifier point to the node it generated
+			(curnode).analogue=newnode;
+
+		}
+
+		//Create the links by iterating through the genes
+		//for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+		for (Gene curgene : genes){
+			//Only create the link if the gene is enabled
+			if (((curgene).enable)==true) {
+				curlink=(curgene).lnk;
+				inode=(curlink.in_node).analogue;
+				onode=(curlink.out_node).analogue;
+				//NOTE: This line could be run through a recurrency check if desired
+				// (no need to in the current implementation of NEAT)
+				newlink=new Link(curlink.weight,inode,onode,curlink.is_recurrent);
+
+				(onode.incoming).add(newlink);
+				(inode.outgoing).add(newlink);
+
+				//Derive link's parameters from its Trait pointer
+				curtrait=(curlink.linktrait);
+
+				newlink.derive_trait(curtrait);
+
+				//Keep track of maximum weight
+				if (newlink.weight > 0)
+					weight_mag=newlink.weight;
+				else weight_mag=-newlink.weight;
+				if (weight_mag>maxweight)
+					maxweight=weight_mag;
+			}
+		}
+
+		//Create the new network
+		newnet=new Network(inlist,outlist,all_list,id);
+
+		//Attach genotype and phenotype together
+		newnet.genotype=this;
+		phenotype=newnet;
+
+		newnet.maxweight=maxweight;
+
+		return newnet;
+
+	}
 //
 //		// Dump this genome to specified file
 //		void print_to_file(std::ostream &outFile);
 //		void print_to_file(std::ofstream &outFile);
+	public void print_to_file(BufferedWriter outFile) {
+		  //std::vector<Trait*>::iterator curtrait;
+		  //std::vector<NNode*>::iterator curnode;
+		  //std::vector<Gene*>::iterator curgene;
+
+		  //outFile<<"genomestart "<<genome_id<<std::endl;
+		outFile.write("genomestart " + genome_id + "\n");
+
+		  //Output the traits
+		  //for(curtrait=traits.begin();curtrait!=traits.end();++curtrait) {
+		for(Trait curtrait : traits){
+//		    (curtrait).trait_id=curtrait-traits.begin()+1;
+//		    (*curtrait)->print_to_file(outFile);
+			curtrait.print_to_file(outFile);
+		  }
+
+		  //Output the nodes
+		  //for(curnode=nodes.begin();curnode!=nodes.end();++curnode) {
+		for(Nnode curnode : nodes){
+		    //(*curnode)->print_to_file(outFile);
+			curnode.print_to_file(outFile);
+		  }
+
+		  //Output the genes
+		  //for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+		for(Gene curgene : genes){
+		    //(*curgene)->print_to_file(outFile);
+			curgene.print_to_file(outFile);
+		  }
+
+		  //outFile<<"genomeend "<<genome_id<<std::endl;
+		outFile.write("genomeend" + genome_id + "\n");
+
+		}
 //
 //		// Wrapper for print_to_file above
 //		void print_to_filename(char *filename);
+	public void print_to_filename(String filename) {
+		//std::ofstream oFile(filename);
+		//oFile.open(filename, std::ostream::Write);
+		try{
+			OutputStream is = new FileOutputStream("filename");
+			BufferedWriter oFile = new BufferedWriter(new OutputStreamWriter(is));
+			print_to_file(oFile);
+			oFile.close();
+		}catch(Exception e){
+			System.out.println("Trouble writing to output file in Genome");
+			System.out.println(e.getMessage());
+		}
+	}
 //
 //		// Duplicate this Genome to create a new one with the specified id 
 //		Genome *duplicate(int new_id);
@@ -706,6 +933,140 @@ class Genome{
 //		// Note: Some of these tests do not indicate a bug, but rather are meant
 //		// to be used to detect specific system states
 //		bool verify();
+	public boolean verify() {
+		//std::vector<NNode*>::iterator curnode;
+		//std::vector<Gene*>::iterator curgene;
+		//std::vector<Gene*>::iterator curgene2;
+		Nnode inode;
+		Nnode onode;
+
+		boolean disab;
+
+		int last_id;
+
+		//int pause;
+
+		//cout<<"Verifying Genome id: "<<this->genome_id<<endl;
+
+		if (this==null) {
+			//cout<<"ERROR GENOME EMPTY"<<endl;
+			//cin>>pause;
+		}
+
+		//Check each gene's nodes
+		//for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+		for (Gene curgene : genes){
+			inode=((curgene).lnk).in_node;
+			onode=((curgene).lnk).out_node;
+
+			//Look for inode
+//			curnode=nodes.begin();
+//			while((curnode!=nodes.end())&&
+//				((*curnode)!=inode))
+//				++curnode;
+//
+//			if (curnode==nodes.end()) {
+//				//cout<<"MISSING iNODE FROM GENE NOT IN NODES OF GENOME!!"<<endl;
+//				//cin>>pause;
+//				return false;
+//			}
+			for (Nnode curnode : nodes){
+				if (curnode!=nodes.lastElement() && curnode != inode) continue;
+				if (curnode == nodes.lastElement()){
+					return false;
+				}
+			}
+
+			//Look for onode
+//			curnode=nodes.begin();
+//			while((curnode!=nodes.end())&&
+//				((*curnode)!=onode))
+//				++curnode;
+//
+//			if (curnode==nodes.end()) {
+//				//cout<<"MISSING oNODE FROM GENE NOT IN NODES OF GENOME!!"<<endl;
+//				//cin>>pause;
+//				return false;
+//			}
+			for (Nnode curnode : nodes){
+				if (curnode!=nodes.lastElement() && curnode != onode) continue;
+				if (curnode == nodes.lastElement()){
+					return false;
+				}
+			}
+
+		}
+
+		//Check for NNodes being out of order
+		last_id=0;
+		//for(curnode=nodes.begin();curnode!=nodes.end();++curnode) {
+		for(Nnode curnode : nodes){
+			if ((curnode).node_id<last_id) {
+				//cout<<"ALERT: NODES OUT OF ORDER in "<<this<<endl;
+				//cin>>pause;
+				return false;
+			}
+
+			last_id=(curnode).node_id;
+		}
+
+
+		//Make sure there are no duplicate genes
+		//for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+		for (Gene curgene : genes){
+
+			//for(curgene2=genes.begin();curgene2!=genes.end();++curgene2) {
+			for (Gene curgene2 : genes){
+				if (((curgene)!=(curgene2))&&
+					((((curgene).lnk).is_recurrent)==(((curgene2).lnk).is_recurrent))&&
+					((((((curgene2).lnk).in_node).node_id)==((((curgene).lnk).in_node).node_id))&&
+					(((((curgene2).lnk).out_node).node_id)==((((curgene).lnk).out_node).node_id)))) {
+						//cout<<"ALERT: DUPLICATE GENES: "<<(*curgene)<<(*curgene2)<<endl;
+						//cout<<"INSIDE GENOME: "<<this<<endl;
+
+						//cin>>pause;
+					}
+
+
+			}
+		}
+
+		//See if a gene is not disabled properly
+		//Note this check does not necessary mean anything is wrong
+		//
+		//if (nodes.size()>=15) {
+		//disab=false;
+		////Go through genes and see if one is disabled
+		//for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+		//if (((*curgene)->enable)==false) disab=true;
+		//}
+
+		//if (disab==false) {
+		//cout<<"ALERT: NO DISABLED GENE IN GENOME: "<<this<<endl;
+		////cin>>pause;
+		//}
+
+		//}
+		//
+
+		//Check for 2 disables in a row
+		//Note:  Again, this is not necessarily a bad sign
+		if (nodes.size()>=500) {
+			disab=false;
+			//for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+			for (Gene curgene : genes){
+				if ((((curgene).enable)==false)&&(disab==true)) {
+					//cout<<"ALERT: 2 DISABLES IN A ROW: "<<this<<endl;
+				}
+				if (((curgene).enable)==false) disab=true;
+				else disab=false;
+			}
+		}
+
+		//cout<<"GENOME OK!"<<endl;
+
+		return true;
+	}
 //
 //		// ******* MUTATORS *******
 //
