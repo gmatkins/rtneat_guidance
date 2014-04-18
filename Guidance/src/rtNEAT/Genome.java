@@ -927,6 +927,96 @@ class Genome{
 //
 //		// Duplicate this Genome to create a new one with the specified id 
 //		Genome *duplicate(int new_id);
+	public Genome duplicate(int new_id) {
+		//Collections for the new Genome
+		Vector<Trait> traits_dup;
+		Vector<Nnode> nodes_dup;
+		Vector<Gene> genes_dup;
+
+		//Iterators for the old Genome
+		//std::vector<Trait*>::iterator curtrait;
+		//std::vector<NNode*>::iterator curnode;
+		//std::vector<Gene*>::iterator curgene;
+
+		//New item pointers
+		Trait newtrait;
+		Nnode newnode;
+		Gene newgene;
+		Trait assoc_trait;  //Trait associated with current item
+
+		NNode inode; //For forming a gene 
+		NNode onode; //For forming a gene
+		Trait traitptr;
+
+		Genome newgenome;
+
+		//verify();
+
+		//Duplicate the traits
+		//for(curtrait=traits.begin();curtrait!=traits.end();++curtrait) {
+		for (Trait curtrait : traits){
+			newtrait=new Trait(curtrait);
+			traits_dup.add(newtrait);
+		}
+
+		//Duplicate NNodes
+		//for(curnode=nodes.begin();curnode!=nodes.end();++curnode) {
+		for (Nnode curnode : nodes){
+			//First, find the trait that this node points to
+			if (((curnode).nodetrait)==null) assoc_trait=null;
+			else {
+//				curtrait=traits_dup.begin();
+//				while(((*curtrait)->trait_id)!=(((*curnode)->nodetrait)->trait_id))
+//					++curtrait;
+//				assoc_trait=(*curtrait);
+				for (Trait curtrait : traits){
+					if(curtrait.trait_id != curnode.nodetrait.trait_id) continue;
+					assoc_trait = new Trait(curtrait);
+					break;
+				}
+			}
+
+			newnode=new Nnode(curnode,assoc_trait);
+
+			(curnode).dup=newnode;  //Remember this node's old copy
+			//    (*curnode)->activation_count=55;
+			nodes_dup.add(newnode);    
+		}
+
+		//Duplicate Genes
+		//for(curgene=genes.begin();curgene!=genes.end();++curgene) {
+		for (Gene curgene : genes){
+			//First find the nodes connected by the gene's link
+
+			inode=(((curgene).lnk).in_node).dup;
+			onode=(((curgene).lnk).out_node).dup;
+
+			//Get a pointer to the trait expressed by this gene
+			traitptr=((curgene).lnk).linktrait;
+			if (traitptr==null) assoc_trait=null;
+			else {
+//				curtrait=traits_dup.begin();
+//				while(((*curtrait)->trait_id)!=(traitptr->trait_id))
+//					++curtrait;
+//				assoc_trait=(*curtrait);
+				for (Trait curtrait : traits){
+					if(curtrait.trait_id != curnode.nodetrait.trait_id) continue;
+					assoc_trait = new Trait(curtrait);
+					break;
+				}
+			}
+
+			newgene=new Gene(curgene,assoc_trait,inode,onode);
+			genes_dup.add(newgene);
+
+		}
+
+		//Finally, return the genome
+		newgenome=new Genome(new_id,traits_dup,nodes_dup,genes_dup, null);
+
+		return newgenome;
+
+	}
 //
 //		// For debugging: A number of tests can be run on a genome to check its
 //		// integrity
@@ -1072,21 +1162,381 @@ class Genome{
 //
 //		// Perturb params in one trait
 //		void mutate_random_trait();
+	public void mutate_random_trait() {
+		//std::vector<Trait*>::iterator thetrait; //Trait to be mutated
+		int traitnum;
+
+		//Choose a random traitnum
+		traitnum=Neat.randint(0,(traits.size())-1);
+
+		//Retrieve the trait and mutate it
+		//thetrait=traits.begin();
+		//(*(thetrait[traitnum])).mutate();
+		traits.setElementAt(new Trait(traits.get(traitnum)), traitnum);
+
+		//TRACK INNOVATION? (future possibility)
+
+	}
 //
 //		// Change random link's trait. Repeat times times
 //		void mutate_link_trait(int times);
+	public void mutate_link_trait(int times) {
+		int traitnum;
+		int genenum;
+		//std::vector<Gene*>::iterator thegene;     //Link to be mutated
+		//std::vector<Trait*>::iterator thetrait; //Trait to be attached
+		int count;
+		int loop;
+
+		for(loop=1;loop<=times;loop++) {
+
+			//Choose a random traitnum
+			traitnum=Neat.randint(0,(traits.size())-1);
+
+			//Choose a random linknum
+			genenum=Neat.randint(0,genes.size()-1);
+
+			//set the link to point to the new trait
+			//thegene=genes.begin();
+//			for(count=0;count<genenum;count++)
+//				++thegene;
+			Gene thegene = genes.get(genenum);
+
+			//Do not alter frozen genes
+			if (!((thegene).frozen)) {
+				//thetrait=traits.begin();
+
+				//((*thegene)->lnk)->linktrait=thetrait[traitnum];
+				thegene.lnk.linktrait = traits.get(traitnum);
+				genes.set(genenum, thegene);
+
+			}
+			//TRACK INNOVATION- future use
+			//(*thegene)->mutation_num+=randposneg()*randfloat()*linktrait_mut_sig;
+
+		}
+	}
 //
 //		// Change random node's trait times times 
 //		void mutate_node_trait(int times);
+	public void mutate_node_trait(int times) {
+		int traitnum;
+		int nodenum;
+		//std::vector<NNode*>::iterator thenode;     //Link to be mutated
+		Nnode thenode;
+		//std::vector<Gene*>::iterator thegene;  //Gene to record innovation
+		//std::vector<Trait*>::iterator thetrait; //Trait to be attached
+		Trait thetrait;
+		int count;
+		int loop;
+
+		for(loop=1;loop<=times;loop++) {
+
+			//Choose a random traitnum
+			traitnum= Neat.randint(0,(traits.size())-1);
+
+			//Choose a random nodenum
+			nodenum= Neat.randint(0,nodes.size()-1);
+
+			//set the link to point to the new trait
+//			thenode=nodes.begin();
+//			for(count=0;count<nodenum;count++)
+//				++thenode;
+			thenode = nodes.get(nodenum);
+
+			//Do not mutate frozen nodes
+			if (!((thenode).frozen)) {
+
+				//thetrait=traits.begin();
+				thetrait = traits.get(traitnum);
+				//(*thenode)->nodetrait=thetrait[traitnum];
+				thenode.nodetrait = thetrait;
+				nodes.set(nodenum, thenode);
+
+			}
+			//TRACK INNOVATION! - possible future use
+			//for any gene involving the mutated node, perturb that gene's
+			//mutation number
+			//for(thegene=genes.begin();thegene!=genes.end();++thegene) {
+			//  if (((((*thegene)->lnk)->in_node)==(*thenode))
+			//  ||
+			//  ((((*thegene)->lnk)->out_node)==(*thenode)))
+			//(*thegene)->mutation_num+=randposneg()*randfloat()*nodetrait_mut_sig;
+			//}
+		}
+	}
 //
 //		// Add Gaussian noise to linkweights either GAUSSIAN or COLDGAUSSIAN (from zero)
 //		void mutate_link_weights(double power,double rate,mutator mut_type);
+	public void mutate_link_weights(double power,double rate,mutator mut_type) {
+		//std::vector<Gene*>::iterator curgene;
+		double num;  //counts gene placement
+		double gene_total;
+		double powermod; //Modified power by gene number
+		//The power of mutation will rise farther into the genome
+		//on the theory that the older genes are more fit since
+		//they have stood the test of time
+
+		double randnum;
+		double randchoice; //Decide what kind of mutation to do on a gene
+		double endpart; //Signifies the last part of the genome
+		double gausspoint;
+		double coldgausspoint;
+
+		boolean severe;  //Once in a while really shake things up
+
+		//Wright variables
+		//double oldval;
+		//double perturb;
+
+
+		// --------------- WRIGHT'S MUTATION METHOD -------------- 
+
+		////Use the fact that we know ends are newest
+		//gene_total=(double) genes.size();
+		//endpart=gene_total*0.8;
+		//num=0.0;
+
+		//for(curgene=genes.begin();curgene!=genes.end();curgene++) {
+
+		////Mutate rate 0.2 controls how many params mutate in the list
+		//if ((randfloat()<rate)||
+		//((gene_total>=10.0)&&(num>endpart))) {
+
+		//oldval=((*curgene)->lnk)->weight;
+
+		////The amount to perturb the value by
+		//perturb=randfloat()*power;
+
+		////Once in a while leave the end part alone
+		//if (num>endpart)
+		//if (randfloat()<0.2) perturb=0;  
+
+		////Decide positive or negative
+		//if (gRandGen.randI()%2) {
+		////Positive case
+
+		////if it goes over the max, find something smaller
+		//if (oldval+perturb>100.0) {
+		//perturb=(100.0-oldval)*randfloat();
+		//}
+
+		//((*curgene)->lnk)->weight+=perturb;
+
+		//}
+		//else {
+		////Negative case
+
+		////if it goes below the min, find something smaller
+		//if (oldval-perturb<100.0) {
+		//perturb=(oldval+100.0)*randfloat();
+		//}
+
+		//((*curgene)->lnk)->weight-=perturb;
+
+		//}
+		//}
+
+		//num+=1.0;
+
+		//}
+
+		
+
+		// ------------------------------------------------------ 
+
+		if (Neat.randfloat()>0.5) severe=true;
+		else severe=false;
+
+		//Go through all the Genes and perturb their link's weights
+		num=0.0;
+		gene_total=(double) genes.size();
+		endpart=gene_total*0.8;
+		//powermod=randposneg()*power*randfloat();  //Make power of mutation random
+		//powermod=randfloat();
+		powermod=1.0;
+
+		//Possibility: Jiggle the newest gene randomly
+		//if (gene_total>10.0) {
+		//  lastgene=genes.end();
+		//  lastgene--;
+		//  if (randfloat()>0.4)
+		//    ((*lastgene)->lnk)->weight+=0.5*randposneg()*randfloat();
+		//}
+
+	/*
+		//KENHACK: NOTE THIS HAS BEEN MAJORLY ALTERED
+		//     THE LOOP BELOW IS THE ORIGINAL METHOD
+		if (mut_type==COLDGAUSSIAN) {
+			//printf("COLDGAUSSIAN");
+			for(curgene=genes.begin();curgene!=genes.end();curgene++) {
+				if (randfloat()<0.9) {
+					randnum=randposneg()*randfloat()*power*powermod;
+					((*curgene)->lnk)->weight+=randnum;
+				}
+			}
+		}
+
+		
+		for(curgene=genes.begin();curgene!=genes.end();curgene++) {
+			if (randfloat()<0.2) {
+				randnum=randposneg()*randfloat()*power*powermod;
+				((*curgene)->lnk)->weight+=randnum;
+
+				//Cap the weights at 20.0 (experimental)
+				if (((*curgene)->lnk)->weight>1.0) ((*curgene)->lnk)->weight=1.0;
+				else if (((*curgene)->lnk)->weight<-1.0) ((*curgene)->lnk)->weight=-1.0;
+			}
+		}
+
+		*/
+
+
+		//Loop on all genes  (ORIGINAL METHOD)
+		//for(curgene=genes.begin();curgene!=genes.end();curgene++) {
+		for (Gene curgene : genes){
+
+			
+			//Possibility: Have newer genes mutate with higher probability
+			//Only make mutation power vary along genome if it's big enough
+			//if (gene_total>=10.0) {
+			//This causes the mutation power to go up towards the end up the genome
+			//powermod=((power-0.7)/gene_total)*num+0.7;
+			//}
+			//else powermod=power;
+
+			//The following if determines the probabilities of doing cold gaussian
+			//mutation, meaning the probability of replacing a link weight with
+			//another, entirely random weight.  It is meant to bias such mutations
+			//to the tail of a genome, because that is where less time-tested genes
+			//reside.  The gausspoint and coldgausspoint represent values above
+			//which a random float will signify that kind of mutation.  
+
+			//Don't mutate weights of frozen links
+			if (!((curgene).frozen)) {
+
+				if (severe) {
+					gausspoint=0.3;
+					coldgausspoint=0.1;
+				}
+				else if ((gene_total>=10.0)&&(num>endpart)) {
+					gausspoint=0.5;  //Mutate by modification % of connections
+					coldgausspoint=0.3; //Mutate the rest by replacement % of the time
+				}
+				else {
+					//Half the time don't do any cold mutations
+					if (Neat.randfloat()>0.5) {
+						gausspoint=1.0-rate;
+						coldgausspoint=1.0-rate-0.1;
+					}
+					else {
+						gausspoint=1.0-rate;
+						coldgausspoint=1.0-rate;
+					}
+				}
+
+				//Possible methods of setting the perturbation:
+				//randnum=gaussrand()*powermod;
+				//randnum=gaussrand();
+
+				randnum=Neat.randposneg() * Neat.randfloat() * power * powermod;
+	            //std::cout << "RANDOM: " << randnum << " " << randposneg() << " " << randfloat() << " " << power << " " << powermod << std::endl;
+				if (mut_type==mutator.GAUSSIAN) {
+					randchoice= Neat.randfloat();
+					if (randchoice>gausspoint)
+						((curgene).lnk).weight+=randnum;
+					else if (randchoice>coldgausspoint)
+						((curgene).lnk).weight=randnum;
+				}
+				else if (mut_type==mutator.COLDGAUSSIAN)
+					((curgene).lnk).weight=randnum;
+
+				//Cap the weights at 8.0 (experimental)
+				if (((curgene).lnk).weight > 8.0) ((curgene).lnk).weight = 8.0;
+				else if (((curgene).lnk).weight < -8.0) ((curgene).lnk).weight = -8.0;
+
+				//Record the innovation
+				//(*curgene)->mutation_num+=randnum;
+				(curgene).mutation_num=((curgene).lnk).weight;
+
+				num+=1.0;
+
+			}
+
+		} //end for loop
+
+
+	}
 //
 //		// toggle genes on or off 
 //		void mutate_toggle_enable(int times);
+	public void mutate_toggle_enable(int times) {
+		int genenum;
+		int count;
+		//std::vector<Gene*>::iterator thegene;  //Gene to toggle
+		//std::vector<Gene*>::iterator checkgene;  //Gene to check
+		int genecount;
+
+		for (count=1;count<=times;count++) {
+
+			//Choose a random genenum
+			genenum=Neat.randint(0,genes.size()-1);
+
+			//find the gene
+//			thegene=genes.begin();
+//			for(genecount=0;genecount<genenum;genecount++)
+//				++thegene;
+			Gene thegene = genes.get(genenum);
+
+			//Toggle the enable on this gene
+			if (((thegene).enable)==true) {
+				//We need to make sure that another gene connects out of the in-node
+				//Because if not a section of network will break off and become isolated
+//				checkgene=genes.begin();
+//				while((checkgene!=genes.end())&&
+//					(((((*checkgene)->lnk)->in_node)!=(((*thegene)->lnk)->in_node))||
+//					(((*checkgene)->enable)==false)||
+//					((*checkgene)->innovation_num==(*thegene)->innovation_num)))
+//					++checkgene;
+				for (Gene checkgene : genes){
+					if ((checkgene!=genes.end())&&
+							(((((checkgene).lnk).in_node)!=(((thegene).lnk).in_node))||
+							(((checkgene).enable)==false)||
+							((checkgene).innovation_num==(thegene).innovation_num)))
+						continue;
+					//Disable the gene if it's safe to do so
+					if (checkgene!=genes.lastElement())
+						(thegene).enable=false;
+					
+				}
+				
+			}
+			else (thegene).enable=true;
+			genes.set(genenum, thegene);
+		}
+	}
 //
 //		// Find first disabled gene and enable it 
 //		void mutate_gene_reenable();
+	void mutate_gene_reenable() {
+		//std::vector<Gene*>::iterator thegene;  //Gene to enable
+
+		//thegene=genes.begin();
+
+		//Search for a disabled gene
+//		while((thegene!=genes.end())&&((*thegene)->enable==true))
+//			++thegene;
+		for (Gene curgene : genes){
+			if(curgene.enable) continue;
+			curgene.enable = true;
+			break;
+		}
+
+		//Reenable it
+//		if (thegene!=genes.end())
+//			if (((*thegene)->enable)==false) (*thegene)->enable=true;
+
+	}
 //
 //		// These last kinds of mutations return false if they fail
 //		//   They can fail under certain conditions,  being unable
@@ -1095,6 +1545,200 @@ class Genome{
 //
 //		// Mutate genome by adding a node respresentation 
 //		bool mutate_add_node(std::vector<Innovation*> &innovs,int &curnode_id,double &curinnov);
+	public boolean mutate_add_node(Vector<Innovation> innovs,int curnode_id,double curinnov) {
+		//std::vector<Gene*>::iterator thegene;  //random gene containing the original link
+		int genenum;  //The random gene number
+		NNode *in_node; //Here are the nodes connected by the gene
+		NNode *out_node; 
+		Link *thelink;  //The link inside the random gene
+
+		//double randmult;  //using a gaussian to find the random gene
+
+		std::vector<Innovation*>::iterator theinnov; //For finding a historical match
+		bool done=false;
+
+		Gene *newgene1;  //The new Genes
+		Gene *newgene2;
+		NNode *newnode;   //The new NNode
+		Trait *traitptr; //The original link's trait
+
+		//double splitweight;  //If used, Set to sqrt(oldweight of oldlink)
+		double oldweight;  //The weight of the original link
+
+		int trycount;  //Take a few tries to find an open node
+		bool found;
+
+		//First, find a random gene already in the genome  
+		trycount=0;
+		found=false;
+
+		//Split next link with a bias towards older links
+		//NOTE: 7/2/01 - for robots, went back to random split
+		//        because of large # of inputs
+		if (false) {
+			thegene=genes.begin();
+			while (((thegene!=genes.end())
+				&&(!((*thegene)->enable)))||
+				((thegene!=genes.end())
+				&&(((*thegene)->lnk->in_node)->gen_node_label==BIAS)))
+				++thegene;
+
+			//Now randomize which node is chosen at this point
+			//We bias the search towards older genes because 
+			//this encourages splitting to distribute evenly
+			while (((thegene!=genes.end())&&
+				(randfloat()<0.3))||
+				((thegene!=genes.end())
+				&&(((*thegene)->lnk->in_node)->gen_node_label==BIAS)))
+			{
+				++thegene;
+			}
+
+			if ((!(thegene==genes.end()))&&
+				((*thegene)->enable))
+			{
+				found=true;
+			}
+		}
+		//In this else:
+		//Alternative random gaussian choice of genes NOT USED in this
+		//version of NEAT
+		//NOTE: 7/2/01 now we use this after all
+		else {
+			while ((trycount<20)&&(!found)) {
+
+				//Choose a random genenum
+				//randmult=gaussrand()/4;
+				//if (randmult>1.0) randmult=1.0;
+
+				//This tends to select older genes for splitting
+				//genenum=(int) floor((randmult*(genes.size()-1.0))+0.5);
+
+				//This old totally random selection is bad- splitting
+				//inside something recently splitted adds little power
+				//to the system (should use a gaussian if doing it this way)
+				genenum=randint(0,genes.size()-1);
+
+				//find the gene
+				thegene=genes.begin();
+				for(int genecount=0;genecount<genenum;genecount++)
+					++thegene;
+
+				//If either the gene is disabled, or it has a bias input, try again
+				if (!(((*thegene)->enable==false)||
+					(((((*thegene)->lnk)->in_node)->gen_node_label)==BIAS)))
+					found=true;
+
+				++trycount;
+
+			}
+		}
+
+		//If we couldn't find anything so say goodbye
+		if (!found) 
+			return false;
+
+		//Disabled the gene
+		(*thegene)->enable=false;
+
+		//Extract the link
+		thelink=(*thegene)->lnk;
+		oldweight=(*thegene)->lnk->weight;
+
+		//Extract the nodes
+		in_node=thelink->in_node;
+		out_node=thelink->out_node;
+
+		//Check to see if this innovation has already been done   
+		//in another genome
+		//Innovations are used to make sure the same innovation in
+		//two separate genomes in the same generation receives
+		//the same innovation number.
+		theinnov=innovs.begin();
+
+		while(!done) {
+
+			if (theinnov==innovs.end()) {
+
+				//The innovation is totally novel
+
+				//Get the old link's trait
+				traitptr=thelink->linktrait;
+
+				//Create the new NNode
+				//By convention, it will point to the first trait
+				newnode=new NNode(NEURON,curnode_id++,HIDDEN);
+				newnode->nodetrait=(*(traits.begin()));
+
+				//Create the new Genes
+				if (thelink->is_recurrent) {
+					newgene1=new Gene(traitptr,1.0,in_node,newnode,true,curinnov,0);
+					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,curinnov+1,0);
+					curinnov+=2.0;
+				}
+				else {
+					newgene1=new Gene(traitptr,1.0,in_node,newnode,false,curinnov,0);
+					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,curinnov+1,0);
+					curinnov+=2.0;
+				}
+
+				//Add the innovations (remember what was done)
+				innovs.push_back(new Innovation(in_node->node_id,out_node->node_id,curinnov-2.0,curinnov-1.0,newnode->node_id,(*thegene)->innovation_num));      
+
+				done=true;
+			}
+
+			// We check to see if an innovation already occured that was:
+			//   -A new node
+			//   -Stuck between the same nodes as were chosen for this mutation
+			//   -Splitting the same gene as chosen for this mutation 
+			//   If so, we know this mutation is not a novel innovation
+			//   in this generation
+			//   so we make it match the original, identical mutation which occured
+			//   elsewhere in the population by coincidence 
+			else if (((*theinnov)->innovation_type==NEWNODE)&&
+				((*theinnov)->node_in_id==(in_node->node_id))&&
+				((*theinnov)->node_out_id==(out_node->node_id))&&
+				((*theinnov)->old_innov_num==(*thegene)->innovation_num)) 
+			{
+
+				//Here, the innovation has been done before
+
+				//Get the old link's trait
+				traitptr=thelink->linktrait;
+
+				//Create the new NNode
+				newnode=new NNode(NEURON,(*theinnov)->newnode_id,HIDDEN);      
+				//By convention, it will point to the first trait
+				//Note: In future may want to change this
+				newnode->nodetrait=(*(traits.begin()));
+
+				//Create the new Genes
+				if (thelink->is_recurrent) {
+					newgene1=new Gene(traitptr,1.0,in_node,newnode,true,(*theinnov)->innovation_num1,0);
+					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,(*theinnov)->innovation_num2,0);
+				}
+				else {
+					newgene1=new Gene(traitptr,1.0,in_node,newnode,false,(*theinnov)->innovation_num1,0);
+					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,(*theinnov)->innovation_num2,0);
+				}
+
+				done=true;
+			}
+			else ++theinnov;
+		}
+
+		//Now add the new NNode and new Genes to the Genome
+		//genes.push_back(newgene1);   //Old way to add genes- may result in genes becoming out of order
+		//genes.push_back(newgene2);
+		add_gene(genes,newgene1);  //Add genes in correct order
+		add_gene(genes,newgene2);
+		node_insert(nodes,newnode);
+
+		return true;
+
+	} 
+
 //
 //		// Mutate the genome by adding a new link between 2 random NNodes 
 //		bool mutate_add_link(std::vector<Innovation*> &innovs,double &curinnov,int tries); 
