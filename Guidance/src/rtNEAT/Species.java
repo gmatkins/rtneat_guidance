@@ -107,7 +107,7 @@ class Species {
 //		//Note: Initialization requires calling estimate_average() on all species
 //		//      Later it should be called only when a species changes 
 //		double estimate_average();
-	double Species::estimate_average() {
+	public double estimate_average() {
 		//std::vector<Organism*>::iterator curorg;
 		double total = 0.0; //running total of fitnesses
 
@@ -117,10 +117,11 @@ class Species {
 		double num_orgs = 0; //counts number of orgs above the time_alive threshold
 
 
-		for(curorg = organisms.begin(); curorg != organisms.end(); ++curorg) {
+		//for(curorg = organisms.begin(); curorg != organisms.end(); ++curorg) {
+		for (Organism curorg : organisms){
 			//New variable time_alive
-			if (((*curorg)->time_alive) >= NEAT::time_alive_minimum) {    
-				total += (*curorg)->fitness;
+			if (((curorg).time_alive) >= Neat.time_alive_minimum) {    
+				total += (curorg).fitness;
 				++num_orgs;
 			}
 		}

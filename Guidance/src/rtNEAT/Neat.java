@@ -18,7 +18,8 @@ import java.util.Random;
 //namespace NEAT {
 public class Neat{
 //
-//	extern int time_alive_minimum; // Minimum time alive to be considered for selection or death in real-time evolution 
+//	extern int time_alive_minimum; // Minimum time alive to be considered for selection or death in real-time evolution
+	public static int time_alive_minimum;
 //	const int num_trait_params = 8;
 	final static int NUM_TRAIT_PARAMS = 8;
 //

@@ -1555,26 +1555,27 @@ class Genome{
 //		bool mutate_add_node(std::vector<Innovation*> &innovs,int &curnode_id,double &curinnov);
 	public boolean mutate_add_node(Vector<Innovation> innovs,int curnode_id,double curinnov) {
 		//std::vector<Gene*>::iterator thegene;  //random gene containing the original link
+		Gene thegene = null;
 		int genenum;  //The random gene number
-		NNode *in_node; //Here are the nodes connected by the gene
-		NNode *out_node; 
-		Link *thelink;  //The link inside the random gene
+		Nnode in_node; //Here are the nodes connected by the gene
+		Nnode out_node; 
+		Link thelink;  //The link inside the random gene
 
 		//double randmult;  //using a gaussian to find the random gene
 
-		std::vector<Innovation*>::iterator theinnov; //For finding a historical match
-		bool done=false;
+		//std::vector<Innovation*>::iterator theinnov; //For finding a historical match
+		boolean done=false;
 
-		Gene *newgene1;  //The new Genes
-		Gene *newgene2;
-		NNode *newnode;   //The new NNode
-		Trait *traitptr; //The original link's trait
+		Gene newgene1;  //The new Genes
+		Gene newgene2;
+		Nnode newnode;   //The new NNode
+		Trait traitptr; //The original link's trait
 
 		//double splitweight;  //If used, Set to sqrt(oldweight of oldlink)
 		double oldweight;  //The weight of the original link
 
 		int trycount;  //Take a few tries to find an open node
-		bool found;
+		boolean found;
 
 		//First, find a random gene already in the genome  
 		trycount=0;
@@ -1584,30 +1585,53 @@ class Genome{
 		//NOTE: 7/2/01 - for robots, went back to random split
 		//        because of large # of inputs
 		if (false) {
-			thegene=genes.begin();
-			while (((thegene!=genes.end())
-				&&(!((*thegene)->enable)))||
-				((thegene!=genes.end())
-				&&(((*thegene)->lnk->in_node)->gen_node_label==BIAS)))
-				++thegene;
+			//thegene=genes.begin();
+			//while (((thegene!=genes.end())
+				//&&(!((*thegene)->enable)))||
+				//((thegene!=genes.end())
+				//&&(((*thegene)->lnk->in_node)->gen_node_label==BIAS)))
+			for (Gene agene : genes){
+				if (agene.enable) {
+					thegene = agene;
+					break;
+				}
+				if ((agene.lnk.in_node.gen_node_label != Nnode.nodeplace.BIAS)){
+					thegene = agene;
+					break;
+				}
+				//if (thegene == genes.lastElement()) thegene = null;
+				//++thegene;
+			}
 
 			//Now randomize which node is chosen at this point
 			//We bias the search towards older genes because 
 			//this encourages splitting to distribute evenly
-			while (((thegene!=genes.end())&&
-				(randfloat()<0.3))||
-				((thegene!=genes.end())
-				&&(((*thegene)->lnk->in_node)->gen_node_label==BIAS)))
+			//while (((thegene!=genes.end())&&
+			for (Gene agene : genes){
+				//(randfloat()<0.3))||
+				if (Neat.randfloat() >= 0.3) {
+					thegene = agene;
+					break;
+				}
+				//((thegene!=genes.end())
+				//&&(((*thegene)->lnk->in_node)->gen_node_label==BIAS)))
+				if (thegene.lnk.in_node.gen_node_label != Nnode.nodeplace.BIAS){
+					thegene = agene;
+					break;
+				}
 			{
-				++thegene;
+				//++thegene;
 			}
 
-			if ((!(thegene==genes.end()))&&
-				((*thegene)->enable))
-			{
-				found=true;
+			//if ((!(thegene==genes.end()))&&
+			//	((*thegene)->enable))
+			if (thegene != null)
+				if (thegene.enable){
+					{
+						found=true;
+					}
 			}
-		}
+
 		//In this else:
 		//Alternative random gaussian choice of genes NOT USED in this
 		//version of NEAT
@@ -1625,16 +1649,18 @@ class Genome{
 				//This old totally random selection is bad- splitting
 				//inside something recently splitted adds little power
 				//to the system (should use a gaussian if doing it this way)
-				genenum=randint(0,genes.size()-1);
+				genenum= Neat.randint(0,genes.size()-1);
 
 				//find the gene
-				thegene=genes.begin();
+				//thegene=genes.begin();
 				for(int genecount=0;genecount<genenum;genecount++)
-					++thegene;
+					thegene = genes.get(genecount);
+				//	++thegene;
+				
 
 				//If either the gene is disabled, or it has a bias input, try again
-				if (!(((*thegene)->enable==false)||
-					(((((*thegene)->lnk)->in_node)->gen_node_label)==BIAS)))
+				if (!(((thegene).enable==false)||
+					(((((thegene).lnk).in_node).gen_node_label)==Nnode.nodeplace.BIAS)))
 					found=true;
 
 				++trycount;
@@ -1647,39 +1673,40 @@ class Genome{
 			return false;
 
 		//Disabled the gene
-		(*thegene)->enable=false;
+		(thegene).enable=false;
 
 		//Extract the link
-		thelink=(*thegene)->lnk;
-		oldweight=(*thegene)->lnk->weight;
+		thelink=(thegene).lnk;
+		oldweight=(thegene).lnk.weight;
 
 		//Extract the nodes
-		in_node=thelink->in_node;
-		out_node=thelink->out_node;
+		in_node=thelink.in_node;
+		out_node=thelink.out_node;
 
 		//Check to see if this innovation has already been done   
 		//in another genome
 		//Innovations are used to make sure the same innovation in
 		//two separate genomes in the same generation receives
 		//the same innovation number.
-		theinnov=innovs.begin();
+		//theinnov=innovs.begin();
 
-		while(!done) {
+		//while(!done) {
+		for (Innovation theinnov : innovs){
 
-			if (theinnov==innovs.end()) {
+			if (theinnov==innovs.lastElement()) {
 
 				//The innovation is totally novel
 
 				//Get the old link's trait
-				traitptr=thelink->linktrait;
+				traitptr=thelink.linktrait;
 
 				//Create the new NNode
 				//By convention, it will point to the first trait
-				newnode=new NNode(NEURON,curnode_id++,HIDDEN);
-				newnode->nodetrait=(*(traits.begin()));
+				newnode=new Nnode(Nnode.nodetype.NEURON,curnode_id++,Nnode.nodeplace.HIDDEN);
+				newnode.nodetrait=((traits.firstElement()));
 
 				//Create the new Genes
-				if (thelink->is_recurrent) {
+				if (thelink.is_recurrent) {
 					newgene1=new Gene(traitptr,1.0,in_node,newnode,true,curinnov,0);
 					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,curinnov+1,0);
 					curinnov+=2.0;
@@ -1704,31 +1731,31 @@ class Genome{
 			//   in this generation
 			//   so we make it match the original, identical mutation which occured
 			//   elsewhere in the population by coincidence 
-			else if (((*theinnov)->innovation_type==NEWNODE)&&
-				((*theinnov)->node_in_id==(in_node->node_id))&&
-				((*theinnov)->node_out_id==(out_node->node_id))&&
-				((*theinnov)->old_innov_num==(*thegene)->innovation_num)) 
+			else if (((theinnov).innovation_type== Innovation.innovtype.NEWNODE)&&
+				((theinnov).node_in_id==(in_node.node_id))&&
+				((theinnov).node_out_id==(out_node.node_id))&&
+				((theinnov).old_innov_num==(thegene).innovation_num)) 
 			{
 
 				//Here, the innovation has been done before
 
 				//Get the old link's trait
-				traitptr=thelink->linktrait;
+				traitptr=thelink.linktrait;
 
 				//Create the new NNode
-				newnode=new NNode(NEURON,(*theinnov)->newnode_id,HIDDEN);      
+				newnode=new Nnode(Nnode.nodetype.NEURON,(theinnov).newnode_id,Nnode.nodeplace.HIDDEN);      
 				//By convention, it will point to the first trait
 				//Note: In future may want to change this
-				newnode->nodetrait=(*(traits.begin()));
+				newnode.nodetrait=((traits.firstElement()));
 
 				//Create the new Genes
-				if (thelink->is_recurrent) {
-					newgene1=new Gene(traitptr,1.0,in_node,newnode,true,(*theinnov)->innovation_num1,0);
-					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,(*theinnov)->innovation_num2,0);
+				if (thelink.is_recurrent) {
+					newgene1=new Gene(traitptr,1.0,in_node,newnode,true,(theinnov).innovation_num1,0);
+					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,(theinnov).innovation_num2,0);
 				}
 				else {
-					newgene1=new Gene(traitptr,1.0,in_node,newnode,false,(*theinnov)->innovation_num1,0);
-					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,(*theinnov)->innovation_num2,0);
+					newgene1=new Gene(traitptr,1.0,in_node,newnode,false,(theinnov).innovation_num1,0);
+					newgene2=new Gene(traitptr,oldweight,newnode,out_node,false,(theinnov).innovation_num2,0);
 				}
 
 				done=true;
