@@ -64,6 +64,85 @@ class Species {
 //		//Change the fitness of all the organisms in the species to possibly depend slightly on the age of the species
 //		//and then divide it by the size of the species so that the organisms in the species "share" the fitness
 //		void adjust_fitness();
+	
+	public void adjust_fitness() {
+		//std::vector<Organism*>::iterator curorg;
+
+		int num_parents;
+		int count;
+
+		int age_debt; 
+
+		//std::cout<<"Species "<<id<<" last improved "<<(age-age_of_last_improvement)<<" steps ago when it moved up to "<<max_fitness_ever<<std::endl;
+
+		age_debt=(age-age_of_last_improvement+1)-Neat.dropoff_age;
+
+		if (age_debt==0) age_debt=1;
+
+		//for(curorg=organisms.begin();curorg!=organisms.end();++curorg) {
+		for (Organism curorg : organisms){
+
+			//Remember the original fitness before it gets modified
+			(curorg).orig_fitness=(curorg).fitness;
+
+			//Make fitness decrease after a stagnation point dropoff_age
+			//Added an if to keep species pristine until the dropoff point
+			//obliterate is used in competitive coevolution to mark stagnation
+			//by obliterating the worst species over a certain age
+			if ((age_debt>=1)||obliterate) {
+
+				//Possible graded dropoff
+				//((*curorg)->fitness)=((*curorg)->fitness)*(-atan(age_debt));
+
+				//Extreme penalty for a long period of stagnation (divide fitness by 100)
+				((curorg).fitness)=((curorg).fitness)*0.01;
+				//std::cout<<"OBLITERATE Species "<<id<<" of age "<<age<<std::endl;
+				//std::cout<<"dropped fitness to "<<((*curorg)->fitness)<<std::endl;
+			}
+
+			//Give a fitness boost up to some young age (niching)
+			//The age_significance parameter is a system parameter
+			//  if it is 1, then young species get no fitness boost
+			if (age<=10) ((curorg).fitness)=((curorg).fitness)*Neat.age_significance; 
+
+			//Do not allow negative fitness
+			if (((curorg).fitness)<0.0) (curorg).fitness=0.0001; 
+
+			//Share fitness with the species
+			(curorg).fitness=((curorg).fitness)/(organisms.size());
+
+		}
+
+		//Sort the population and mark for death those after survival_thresh*pop_size
+		//organisms.qsort(order_orgs);
+		Collections.sort(organisms);
+
+		//Update age_of_last_improvement here
+		if ((((organisms.firstElement())).orig_fitness)> 
+		    max_fitness_ever) {
+		  age_of_last_improvement=age;
+		  max_fitness_ever=(((organisms.firstElement())).orig_fitness);
+		}
+
+		//Decide how many get to reproduce based on survival_thresh*pop_size
+		//Adding 1.0 ensures that at least one will survive
+		num_parents=(int) Math.floor((Neat.survival_thresh*((double) organisms.size()))+1.0);
+		
+		//Mark for death those who are ranked too low to be parents
+		curorg=organisms.begin();
+		(*curorg)->champion=true;  //Mark the champ as such
+		for(count=1;count<=num_parents;count++) {
+		  if (curorg!=organisms.end())
+		    ++curorg;
+		}
+		while(curorg!=organisms.end()) {
+		  (*curorg)->eliminate=true;  //Mark for elimination
+		  //std::std::cout<<"marked org # "<<(*curorg)->gnome->genome_id<<" fitness = "<<(*curorg)->fitness<<std::std::endl;
+		  ++curorg;
+		}             
+
+	}
+
 //
 //		double compute_average_fitness(); 
 //
