@@ -590,7 +590,31 @@ class Network{
 //		// This checks a POTENTIAL link between a potential in_node
 //		// and potential out_node to see if it must be recurrent 
 //		// Use count and thresh to jump out in the case of an infinite loop 
-//		bool is_recur(NNode *potin_node,NNode *potout_node,int &count,int thresh); 
+//		bool is_recur(NNode *potin_node,NNode *potout_node,int &count,int thresh);
+	public boolean is_recur(Nnode potin_node,Nnode potout_node,int count,int thresh) {
+		//std::vector<Link*>::iterator curlink;
+
+
+		++count;  //Count the node as visited
+
+		if (count>thresh) {
+			//cout<<"returning false"<<endl;
+			return false;  //Short out the whole thing- loop detected
+		}
+
+		if (potin_node==potout_node) return true;
+		else {
+			//Check back on all links...
+			//for(curlink=(potin_node->incoming).begin();curlink!=(potin_node->incoming).end();curlink++) {
+			for(Link curlink : (potin_node.incoming))
+				//But skip links that are already recurrent
+				//(We want to check back through the forward flow of signals only
+				if (!((curlink).is_recurrent)) {
+					if (is_recur((curlink).in_node,potout_node,count,thresh)) return true;
+				}
+		}
+		return false;
+	}
 //
 //		// Some functions to help GUILE input into Networks   
 //		int input_start();

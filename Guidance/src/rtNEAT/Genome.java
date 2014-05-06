@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Iterator;
 import java.util.Vector;
 
 //#ifndef _GENOME_H_
@@ -278,7 +279,7 @@ class Genome{
 	
 				//Read in a node
 				else if ((curword == "node")) {
-					Nnode newnode;
+					Nnode newnode = null;
 	
 					//char argline[1024];
 					String argline;
@@ -297,7 +298,7 @@ class Genome{
 	
 				//Read in a Gene
 				else if ((curword == "gene")) {
-					Gene newgene;
+					Gene newgene = null;
 	
 					//char argline[1024];
 					String argline;
@@ -1566,10 +1567,10 @@ class Genome{
 		//std::vector<Innovation*>::iterator theinnov; //For finding a historical match
 		boolean done=false;
 
-		Gene newgene1;  //The new Genes
-		Gene newgene2;
-		Nnode newnode;   //The new NNode
-		Trait traitptr; //The original link's trait
+		Gene newgene1 = null;  //The new Genes
+		Gene newgene2 = null;
+		Nnode newnode = null;   //The new NNode
+		Trait traitptr = null; //The original link's trait
 
 		//double splitweight;  //If used, Set to sqrt(oldweight of oldlink)
 		double oldweight;  //The weight of the original link
@@ -1766,9 +1767,12 @@ class Genome{
 		//Now add the new NNode and new Genes to the Genome
 		//genes.push_back(newgene1);   //Old way to add genes- may result in genes becoming out of order
 		//genes.push_back(newgene2);
-		add_gene(genes,newgene1);  //Add genes in correct order
-		add_gene(genes,newgene2);
-		node_insert(nodes,newnode);
+//		add_gene(genes,newgene1);  //Add genes in correct order
+//		add_gene(genes,newgene2);
+//		node_insert(nodes,newnode);
+		genes.add(newgene1);
+		genes.add(newgene2);
+		nodes.add(newnode);
 
 		return true;
 
@@ -1777,20 +1781,20 @@ class Genome{
 //
 //		// Mutate the genome by adding a new link between 2 random NNodes 
 //		bool mutate_add_link(std::vector<Innovation*> &innovs,double &curinnov,int tries);
-			boolean mutate_add_link(Vector<Innovation> innovs,double curinnov,int tries) {
+	boolean mutate_add_link(Vector<Innovation> innovs,double curinnov,int tries) {
 
 				int nodenum1,nodenum2;  //Random node numbers
 				//std::vector<NNode*>::iterator thenode1,thenode2;  //Random node iterators
 				Nnode thenode1 = null, thenode2 = null;
 				int nodecount;  //Counter for finding nodes
 				int trycount; //Iterates over attempts to find an unconnected pair of nodes
-				Nnode nodep1; //Pointers to the nodes
-				Nnode nodep2; //Pointers to the nodes
+				Nnode nodep1 = null; //Pointers to the nodes
+				Nnode nodep2 = null; //Pointers to the nodes
 				//Vector<Gene>::iterator thegene; //Searches for existing link
 				boolean found=false;  //Tells whether an open pair was found
 				//std::vector<Innovation*>::iterator theinnov; //For finding a historical match
-				int recurflag; //Indicates whether proposed link is recurrent
-				Gene newgene;  //The new Gene
+				boolean recurflag=false; //Indicates whether proposed link is recurrent
+				Gene newgene = null;  //The new Gene
 
 				int traitnum;  //Random trait finder
 				//std::vector<Trait*>::iterator thetrait;
@@ -1842,61 +1846,54 @@ class Genome{
 						else loop_recur=false;
 
 						if (loop_recur) {
-							nodenum1= Neat.randint(first_nonsensor,nodes.size()-1);
+							nodenum1=Neat.randint(first_nonsensor,nodes.size()-1);
 							nodenum2=nodenum1;
 						}
 						else {
 							//Choose random nodenums
-							nodenum1= Neat.randint(0,nodes.size()-1);
-							nodenum2= Neat.randint(first_nonsensor,nodes.size()-1);
+							nodenum1=Neat.randint(0,nodes.size()-1);
+							nodenum2=Neat.randint(first_nonsensor,nodes.size()-1);
 						}
 
 						//Find the first node
-						//thenode1=nodes.begin();
-						//for(nodecount=0;nodecount<nodenum1;nodecount++)
-						for (Nnode anode1 : nodes){
-							//++thenode1;
-							if (nodecount >= nodenum1) {
-								thenode1 = anode1;
-								break;
-							}
-						}
+//						thenode1=nodes.begin();
+//						for(nodecount=0;nodecount<nodenum1;nodecount++)
+//							++thenode1;
+						for (nodecount = 0; nodecount < nodenum1; nodecount++)
+							thenode1 = nodes.get(nodecount);
 
 						//Find the second node
-						//thenode2=nodes.begin();
-						//for(nodecount=0;nodecount<nodenum2;nodecount++)
-						for (Nnode anode2 : nodes){
-							//++thenode2;
-							if (nodecount >= nodenum2){
-								thenode2 = anode2;
-								break;
-							}
-						}
+//						thenode2=nodes.begin();
+//						for(nodecount=0;nodecount<nodenum2;nodecount++)
+//							++thenode2;
+						for (nodecount = 0; nodecount < nodenum2; nodecount++)
+							thenode2 = nodes.get(nodecount);
 
 						nodep1=(thenode1);
 						nodep2=(thenode2);
 
 						//See if a recur link already exists  ALSO STOP AT END OF GENES!!!!
-						//thegene=genes.begin();
-						//while ((thegene!=genes.end()) && 
-						//	((nodep2.type)!=SENSOR) &&   //Don't allow SENSORS to get input
-						//	(!((((thegene).lnk).in_node==nodep1)&&
-						//	(((thegene).lnk).out_node==nodep2)&&
-						//	((thegene).lnk).is_recurrent))) {
-						//		++thegene;
-						//	}
-						for (;;){ //wtf
+						Iterator<Gene> thegeneIter=genes.iterator();
+						Gene thegene = thegeneIter.next();
+						while ((thegene != null) && 
+							((nodep2.type)!= Nnode.nodetype.SENSOR) &&   //Don't allow SENSORS to get input
+							(!((((thegene).lnk).in_node==nodep1)&&
+							(((thegene).lnk).out_node==nodep2)&&
+							((thegene).lnk).is_recurrent))) {
+								thegene = thegeneIter.next();
+							}
 
-							if (thegene!=genes.end())
+							if (thegene==genes.lastElement())
 								trycount++;
 							else {
 								count=0;
-								recurflag=phenotype->is_recur(nodep1->analogue,nodep2->analogue,count,thresh);
+								recurflag= phenotype.is_recur(nodep1.analogue,nodep2.analogue,count,thresh);
 
 								//ADDED: CONSIDER connections out of outputs recurrent
-								if (((nodep1->type)==OUTPUT)||
-									((nodep2->type)==OUTPUT))
-									recurflag=true;
+								//REMVED: Can't compare nodetype to nodeplace
+//								if (((nodep1.type)==Nnode.nodeplace.OUTPUT)||
+//									((nodep2.type)==Nnode.nodeplace.OUTPUT))
+//									recurflag=true;
 
 								//Exit if the network is faulty (contains an infinite loop)
 								//NOTE: A loop doesn't really matter
@@ -1924,45 +1921,51 @@ class Genome{
 						//cout<<"TRY "<<trycount<<std::endl;
 
 						//Choose random nodenums
-						nodenum1=randint(0,nodes.size()-1);
-						nodenum2=randint(first_nonsensor,nodes.size()-1);
+						nodenum1=Neat.randint(0,nodes.size()-1);
+						nodenum2=Neat.randint(first_nonsensor,nodes.size()-1);
 
 						//Find the first node
-						thenode1=nodes.begin();
-						for(nodecount=0;nodecount<nodenum1;nodecount++)
-							++thenode1;
+//						thenode1=nodes.begin();
+//						for(nodecount=0;nodecount<nodenum1;nodecount++)
+//							++thenode1;
+						for (nodecount = 0; nodecount < nodenum1; nodecount++)
+							thenode1 = nodes.get(nodecount);
 
 						//cout<<"RETRIEVED NODE# "<<(*thenode1)->node_id<<std::endl;
 
 						//Find the second node
-						thenode2=nodes.begin();
-						for(nodecount=0;nodecount<nodenum2;nodecount++)
-							++thenode2;
+//						thenode2=nodes.begin();
+//						for(nodecount=0;nodecount<nodenum2;nodecount++)
+//							++thenode2;
+						for (nodecount = 0; nodecount < nodenum2; nodecount++)
+							thenode2 = nodes.get(nodecount);
 
-						nodep1=(*thenode1);
-						nodep2=(*thenode2);
+						nodep1=(thenode1);
+						nodep2=(thenode2);
 
 						//See if a link already exists  ALSO STOP AT END OF GENES!!!!
-						thegene=genes.begin();
-						while ((thegene!=genes.end()) && 
-							((nodep2->type)!=SENSOR) &&   //Don't allow SENSORS to get input
-							(!((((*thegene)->lnk)->in_node==nodep1)&&
-							(((*thegene)->lnk)->out_node==nodep2)&&
-							(!(((*thegene)->lnk)->is_recurrent))))) {
-								++thegene;
+						Iterator<Gene> thegeneIter = genes.iterator();
+						Gene thegene = thegeneIter.next();
+						while ((thegene!=genes.lastElement()) && 
+							((nodep2.type)!=Nnode.nodetype.SENSOR) &&   //Don't allow SENSORS to get input
+							(!((((thegene).lnk).in_node==nodep1)&&
+							(((thegene).lnk).out_node==nodep2)&&
+							(!(((thegene).lnk).is_recurrent))))) {
+								thegene = thegeneIter.next();
 							}
 
-							if (thegene!=genes.end())
+							if (thegene!=genes.lastElement())
 								trycount++;
 							else {
 
 								count=0;
-								recurflag=phenotype->is_recur(nodep1->analogue,nodep2->analogue,count,thresh);
+								recurflag=phenotype.is_recur(nodep1.analogue,nodep2.analogue,count,thresh);
 
 								//ADDED: CONSIDER connections out of outputs recurrent
-								if (((nodep1->type)==OUTPUT)||
-									((nodep2->type)==OUTPUT))
-									recurflag=true;
+								//REMOVED: Why is it comparing nodetype to nodeplace???
+//								if (((nodep1->type)==OUTPUT)||
+//									((nodep2->type)==OUTPUT))
+//									recurflag=true;
 
 								//Exit if the network is faulty (contains an infinite loop)
 								if (count>thresh) {
@@ -1987,21 +1990,22 @@ class Genome{
 				if (found) {
 
 					//Check to see if this innovation already occured in the population
-					theinnov=innovs.begin();
+					Iterator<Innovation>theinnovIter=innovs.iterator();
+					Innovation theinnov = theinnovIter.next();
 
 					//If it was supposed to be recurrent, make sure it gets labeled that way
-					if (do_recur) recurflag=1;
+					if (do_recur) recurflag=true;
 
 					done=false;
 
 					while(!done) {
 
 						//The innovation is totally novel
-						if (theinnov==innovs.end()) {
+						if (theinnov==innovs.lastElement()) {
 
 							//If the phenotype does not exist, exit on false,print error
 							//Note: This should never happen- if it does there is a bug
-							if (phenotype==0) {
+							if (phenotype==null) {
 								//cout<<"ERROR: Attempt to add link to genome with no phenotype"<<std::endl;
 								return false;
 							}
@@ -2023,46 +2027,49 @@ class Genome{
 							//  if (randfloat()<recur_prob) recurflag=1;
 
 							//Choose a random trait
-							traitnum=randint(0,(traits.size())-1);
-							thetrait=traits.begin();
+							traitnum=Neat.randint(0,(traits.size())-1);
+							Iterator<Trait>thetraitIter=traits.iterator();
+							Trait thetrait = thetraitIter.next();
 
 							//Choose the new weight
 							//newweight=(gaussrand())/1.5;  //Could use a gaussian
-							newweight=randposneg()*randfloat()*1.0; //used to be 10.0
+							newweight=Neat.randposneg()*Neat.randfloat()*1.0; //used to be 10.0
 
 							//Create the new gene
-							newgene=new Gene(((thetrait[traitnum])),newweight,nodep1,nodep2,recurflag,curinnov,newweight);
+							newgene=new Gene(((traits.get(traitnum))),newweight,nodep1,nodep2,recurflag,curinnov,newweight);
 
 							//Add the innovation
-							innovs.push_back(new Innovation(nodep1->node_id,nodep2->node_id,curinnov,newweight,traitnum));
+							innovs.add(new Innovation(nodep1.node_id,nodep2.node_id,curinnov,newweight,traitnum));
 
 							curinnov=curinnov+1.0;
 
 							done=true;
 						}
 						//OTHERWISE, match the innovation in the innovs list
-						else if (((*theinnov)->innovation_type==NEWLINK)&&
-							((*theinnov)->node_in_id==(nodep1->node_id))&&
-							((*theinnov)->node_out_id==(nodep2->node_id))&&
-							((*theinnov)->recur_flag==(bool)recurflag)) {
+						else if (((theinnov).innovation_type==Innovation.innovtype.NEWLINK)&&
+							((theinnov).node_in_id==(nodep1.node_id))&&
+							((theinnov).node_out_id==(nodep2.node_id))&&
+							((theinnov).recur_flag==recurflag)) {
 
-								thetrait=traits.begin();
+								Iterator<Trait>thetraitIter=traits.iterator();
+								Trait thetrait = thetraitIter.next();
 
 								//Create new gene
-								newgene=new Gene(((thetrait[(*theinnov)->new_traitnum])),(*theinnov)->new_weight,nodep1,nodep2,recurflag,(*theinnov)->innovation_num1,0);
+								newgene=new Gene(((traits.get((theinnov).new_traitnum))),(theinnov).new_weight,nodep1,nodep2,recurflag,(theinnov).innovation_num1,0);
 
 								done=true;
 
 							}
 						else {
 							//Keep looking for a matching innovation from this generation
-							++theinnov;
+							theinnov = theinnovIter.next();
 						}
 					}
 
 					//Now add the new Genes to the Genome
 					//genes.push_back(newgene);  //Old way - could result in out-of-order innovation numbers in rtNEAT
-					add_gene(genes,newgene);  //Adds the gene in correct order
+					//add_gene(genes,newgene);  //Adds the gene in correct order
+					genes.add(newgene);
 
 
 					return true;
